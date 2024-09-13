@@ -1,39 +1,45 @@
 
-Register as Admin
+---
 
-SETTING UP POLL ##################################################
- * Add Polls
-    * Verify Add candidates
-        * add/edit Portfolio
-        * other candidate details
+### Admin Functions
 
-    UNRESTRICTED:
-    * Autheticate Registered Voters
-        * age verification
-        * id verification
+**1. Setting Up Poll**
+- **Add Polls**: Create new polls.
+- **Verify/Add Candidates**:
+  - Manage candidate portfolios.
+  - Add or edit candidate details.
 
-    RESTRICTED:
-        * Add a set of emails
-        * Allow only authorized user-emails
-##################################################################
+- **Authentication of Registered Voters** (Unrestricted):
+  - **Age Verification**: Ensure voters meet age requirements.
+  - **ID Verification**: Verify voter identities using government-issued or institution IDs.
 
+- **Access Control (Restricted)**:
+  - Upload and manage a specific list of authorized user emails to limit access.
+  - Allow only users with these emails to participate in voting.
 
-DURING POLL ######################################################
-* One Id - One Vote
-* Auditing
-* View live poll
-##################################################################
+---
 
+**2. During Poll**
+- **One ID – One Vote**: Ensure voters can cast only one vote.
+- **Auditing**: Track and log all voting activities to ensure transparency and accountability.
+- **View Live Polls**: Admins can monitor the live voting process and see real-time updates.
 
-AFTER ELECTION ###################################################
- * Publish Results
-    * make a sharable link
- * Send Mail to Registered Candidates
- * 
-##################################################################
+---
 
+**3. After Election**
+- **Publish Results**: 
+  - Generate and share a results link.
+  - Make results publicly accessible to authorized users.
+  
+- **Notify Candidates**: Send results via email to registered candidates.
 
-Register as Voter
- * View Available Polls
- * Choose a poll to vote
- * view live polls 
+---
+
+### Voter Functions
+
+**1. Registration**
+- **View Available Polls**: See all the ongoing and upcoming polls.
+- **Choose Poll**: Select a specific poll to vote in.
+- **View Live Polls**: Track ongoing elections and see live statistics.
+
+---
