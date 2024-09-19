@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M_Rewards</title>
+    <script>
+        function getBingUrl(query) {
+            let encodedQuery = encodeURIComponent(query);
+            return "https://www.bing.com/search?q=" + encodedQuery;
+        }
+        function searchInBing(query) {
+            let bingUrl = getBingUrl(query);
+            window.open(bingUrl, "_blank");
+        }
+        document.addEventListener('DOMContentLoaded',()=>{
+            var txt=document.querySelector("#len");
+            var arr=document.querySelector(".cls").innerHTML.split(" ");
+            function sleep(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+            async function demo(l) {
+                for (let i = 0; i < l; i++) {
+                    console.log(`it's ${i+1}th word...`);
+                    searchInBing(arr[i]);
+                    await sleep(2 * 1000);
+                }
+                console.log('Done');
+            }
+            var b=document.querySelector("#but");
+            b.onclick=()=>{
+                var l=Number(txt.value);
+                demo(l);
+            };
+        })
+
+    </script>
+</head>
+<body>
+    <p class="cls">Lorem ipsum dolor, sit amet consectetur adipisicing elit. Officiis earum possimus eos ullam saepe tenetur ipsa sequi obcaecati, quia voluptas sint adipisci reprehenderit libero aliquam aliquid quas modi! Incidunt, est quibusdam! Debitis, possimus id.</p>
+    <input type="text" id="len" placeholder="enter count here">
+    <button id="but">initiate</button>
+</body>
+</html>
