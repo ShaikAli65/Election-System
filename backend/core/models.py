@@ -1,6 +1,6 @@
 import enum
 
-from pydantic import BaseModel, EmailStr, FilePath, FutureDate
+from pydantic import BaseModel, EmailStr, Field, FilePath, FutureDate
 
 PollId = str
 ResultId = str
@@ -9,7 +9,7 @@ PortFolioId = PersonId
 
 
 class Person(BaseModel):
-    id: PersonId
+    id: PersonId = Field(..., pattern=r"^[a-fA-F0-9\-]+$")
     name: str
     email: EmailStr
     age: int
@@ -26,9 +26,18 @@ class Voter(Person):
 
 class Candidate(Person):
     """Candidate Model"""
-    port_folio: FilePath
+
+
+class PortFolio(BaseModel):
+    portfolio_path: FilePath = None
     poll_id: PollId
-    vote_count: int
+    candidate_id: PersonId
+
+
+class CandidateInPoll(BaseModel):
+    candidate_id: PersonId
+    portfolio: PortFolio = None
+    vote_count: int = 0
 
 
 class PollStatus(enum.Enum):
@@ -45,23 +54,27 @@ class PollStatus(enum.Enum):
     CANCELLED = 4
 
 
-class PortFolio:
-    ...
-
-
 class PollResult(BaseModel):
     poll_id: PollId
     result_id: ResultId
-    winner: Candidate
+    winner: CandidateInPoll
     total_votes: int
 
 
 class Poll(BaseModel):
-    id: PollId
+    poll_id: PollId = None
     title: str
     type: str
     start_date: FutureDate
     end_date: FutureDate
+    candidates: list[CandidateInPoll]
+
+
+class PollInDb(Poll):
     status: PollStatus = PollStatus.SCHEDULED
     result: PollResult = None
-    candidates: list[Candidate]
+
+
+class UserLoginForm(BaseModel):
+    username: str
+    password: str

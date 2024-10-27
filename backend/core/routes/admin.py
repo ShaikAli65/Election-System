@@ -1,46 +1,54 @@
-from typing import Annotated, Any
-
-from fastapi import APIRouter, Request
-from starlette.datastructures import FormData
-from starlette.responses import JSONResponse, RedirectResponse, Response
-
-from backend.core.models import Admin, Candidate, PersonId, Poll, PollId
-from backend.core.operations import db
-
 import logging
+from typing import Annotated
+
+from fastapi import APIRouter, Form, Request
+from fastapi.params import Depends
+from starlette.responses import JSONResponse, RedirectResponse
+
+from ..models import Candidate, Poll, PollId
+from ..operations import db
+from ..operations.parses import parse_poll
+
+
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 logger.addHandler(logging.StreamHandler())
 
 router = APIRouter(
     prefix="/admin",
-    tags=["admin",],
+    tags=["admin", ],
     responses={404: {"description": "Not found"}},
 )
 
 
-@router.get("/polls/{poll_id}")
-async def get_poll(poll_id: PollId, request: Request):
-    redirect_url = request.url_for('poll', poll_id=poll_id)
+@router.get("/polls/{pollid}")
+async def get_poll(pollid: PollId, request: Request):
+    redirect_url = request.url_for('poll', poll_id=pollid)
     return RedirectResponse(url=redirect_url)
 
 
-@router.post("/create_poll")
-async def create_poll(poll: Poll):
-    db.create_poll(poll)
+@router.post("/createPoll")
+async def create_poll(poll: Poll = Depends(parse_poll)):
+    """
+    :param poll:
+    :return:
+    """
+    print(poll)
+    return JSONResponse({"poll_id": poll.poll_id,})
 
 
-@router.post("/update_poll")
+@router.post("/updatePoll")
 async def update_poll():
     ...
 
 
-@router.post("/add_candidate")
-async def add_candiates(candidate_data: Annotated[Any, FormData]):
-    ...
+@router.post("/addCandidate")
+async def add_candiates(candidate: Annotated[Candidate, Form()]):
+    print("recieved a candidate", candidate)
+    return candidate.model_dump()
 
 
-@router.get("/getcandidates")
+@router.get("/getCandidates")
 async def get_candidates():
     l = []
     for candidate in db.candidates.values():
@@ -49,6 +57,6 @@ async def get_candidates():
     return JSONResponse(l)
 
 
-@router.delete("/delete_poll")
+@router.delete("/deletePoll")
 async def delete_poll():
     ...

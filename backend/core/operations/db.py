@@ -209,3 +209,9 @@ def create_poll(poll: Poll):
     dumped = poll.model_dump_json()
     polls.update({poll.id: dumped})
 
+
+def get_candidate(c_id) -> dict:
+    candidate = candidates[c_id]
+
+    return candidate.model_dump(exclude=['vote_count', 'port_folio'])
+

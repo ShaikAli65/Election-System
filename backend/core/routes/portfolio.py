@@ -1,8 +1,10 @@
-from fastapi import APIRouter, File
+from typing import Annotated
+
+from fastapi import APIRouter, Query
 from starlette.responses import FileResponse
 
 from backend.core.files import get_porfolio_path
-from backend.core.models import PersonId, PollId, PortFolioId
+from backend.core.models import PersonId, PollId
 
 router = APIRouter(
     prefix="/portfolio",
@@ -11,13 +13,11 @@ router = APIRouter(
 )
 
 
-@router.get("/{portfolio_id}")
-async def get_portfolio(portfolio_id: PortFolioId):
-    print("get PortFolioId", portfolio_id)
-
-
 @router.get("/")
-async def get_portfolio(pollid: PollId, candidate_id: PersonId):
-    print("getting portfolio of", candidate_id)
-    file_path = get_porfolio_path(pollid, candidate_id)
+async def get_portfolio(
+        poll_id: Annotated[PollId, Query(alias='pollId')],
+        candidate_id: Annotated[PollId, Query(alias='candidateId')]
+):
+    print("get PortFolioId", poll_id, candidate_id)
+    file_path = get_porfolio_path(poll_id, candidate_id)
     return FileResponse(file_path, media_type='application/pdf', filename=f"{candidate_id}.pdf")

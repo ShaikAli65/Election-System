@@ -1,17 +1,31 @@
+import json
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from starlette.responses import HTMLResponse
+from starlette.responses import RedirectResponse
 
+from core import constants
 from core.routes import admin, candidate, poll, portfolio, voter
+
+
+@asynccontextmanager
+async def life_span(_: FastAPI):
+    with open(constants.GOOGLE_OAUTH_SECRETS_PATH) as f:
+        google_oauth_creds = json.load(fp=f)
+        constants.google_oauth_creds = google_oauth_creds
+    yield
+
 
 app = FastAPI(
     title="ElectionSystem",
+    lifespan=life_span,
 )
 
 
 app.add_middleware(
     CORSMiddleware,
-    # allow_origins=["*"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -28,18 +42,4 @@ app.include_router(admin.router)
 
 @app.get("/")
 async def main():
-    content = """
-<body>
-<form action="/poll/P1/upload/" enctype="multipart/form-data" method="post">
-<input name="files" type="file" multiple>
-<input type="submit">
-</form>
-<form action="/uploadfiles/" enctype="multipart/form-data" method="post">
-<input name="files" type="file" multiple>
-<input type="submit">
-</form>
-</body>
-    """
-    r = HTMLResponse(content=content)
-    r.set_cookie('a','1',120,180,'/')
-    return r
+    return RedirectResponse("/voter/signin")

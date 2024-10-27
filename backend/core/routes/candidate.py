@@ -1,6 +1,6 @@
 from fastapi import APIRouter
-from backend.core.models import PersonId
-
+from backend.core.models import PersonId, PollId
+from backend.core.operations import db
 
 router = APIRouter(
     prefix="/candidate",
@@ -9,6 +9,8 @@ router = APIRouter(
 )
 
 
-@router.get("/{candidate_id}")
-async def get_candidate(candidate_id: PersonId):
-    ...
+@router.get("/")
+async def get_candidate(poll_id: PollId, candidate_id: PersonId):
+    candidate = db.get_candidate(candidate_id)
+    return candidate
+

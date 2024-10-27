@@ -13,6 +13,7 @@ router = APIRouter(
 
 @router.get("/{poll_id}", name='poll')
 async def get_poll(poll_id: PollId) -> Poll:
+
     return db.polls[poll_id]
 
 
