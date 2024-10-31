@@ -4,11 +4,11 @@ import fastapi
 import pydantic
 from fastapi import Cookie, HTTPException, Request
 
-from ..models.person import PersonId
-from ..models.poll import CandidateInPoll, Poll, PortFolio
+from backend.election.core.models.person import PersonId
+from backend.election.core.models.poll import CandidateInPoll, Poll, PortFolio
 
-from backend.utils.files import generate_portfolio_path, save_porfolio
-from backend.utils.useables import get_unique_id
+from backend.election.utils.files import generate_portfolio_path, save_porfolio
+from backend.election.utils.useables import get_unique_id
 
 
 async def parse_cookie(cookie: Annotated[dict, Cookie()]):

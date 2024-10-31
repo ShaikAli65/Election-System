@@ -2,7 +2,7 @@ import configparser
 import json
 from pathlib import Path
 
-from backend.core.constants import CONFIG, Configurations, DBConfigurations, DB_CONFIG
+from core.constants import CONFIG, Configurations, DBConfigurations, DB_CONFIG
 
 
 def make_default_config(config_fd: "A file descriptor"):
@@ -39,4 +39,16 @@ def load_db_configs(config_fd: "A file descriptor"):
         database_name=dbconfig['DATABASE_NAME'],
     )
     dbconfigs.make_url(dbconfig['URL'])
+    dbconfigs.engine_args = {
+        'connect_args': {
+            "server_settings": {"jit": dbconfig.getboolean('JIT')}
+        }
+    }
+
     DB_CONFIG.set(dbconfigs)
+
+
+def make_db_configurations(url_frame, url):
+    dbconfig = DBConfigurations()
+    dbconfig.make_attributes(url, url_frame)
+    DB_CONFIG.set(dbconfig)

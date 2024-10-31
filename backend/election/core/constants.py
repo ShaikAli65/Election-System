@@ -1,6 +1,9 @@
+# this module is not allowed to have any other project based imports
+
 import contextvars
 import dataclasses
 import re
+from dataclasses import Field
 from pathlib import Path
 
 
@@ -15,8 +18,13 @@ class Configurations:
     google_oauth_secrets_path: Path
     google_oauth_creds: dict = None
 
+    def __str__(self):
+        for k, v in self.__dict__.items():
+            print(k, v)
+        return ""
 
-@dataclasses.dataclass(slots=True)
+
+@dataclasses.dataclass
 class DBConfigurations:
     username: str = None
     password: str = None
@@ -24,6 +32,7 @@ class DBConfigurations:
     port: int = None
     database_name: str = None
     url: str = None
+    engine_args: dict = None
 
     def make_url(self, url_frame):
         self.url = url_frame.format(
@@ -37,10 +46,18 @@ class DBConfigurations:
     def make_attributes(self, url_frame, url_string):
         pattern = re.sub(r"{(\w+)}", r"(?P<\1>[^:/@]+)", url_frame)
         match = re.match(pattern, url_string)
+        self.url = url_string
         if match:
             extracted_values = match.groupdict()
             for key, value in extracted_values.items():
                 setattr(self, key, value)
+        else:
+            raise ValueError("database url matching failed")
+
+    def __str__(self):
+        for k, v in self.__dict__.items():
+            print(k, v)
+        return ""
 
 
 CONFIG_FILE_PATH = Path("C:\\Users\\7862s\\Desktop\\Election-System\\backend\\config.ini")

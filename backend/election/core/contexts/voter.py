@@ -1,10 +1,9 @@
 from typing import Annotated
 
-from fastapi import HTTPException
 from fastapi.params import Depends
 
-from ..models.person import Voter
-from . import parses
+from core.models.person import Voter
+from utils import parses
 
 
 class VoterContext:
