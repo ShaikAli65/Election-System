@@ -1,5 +1,5 @@
 # models.py
-from sqlalchemy import Column, String, Boolean, Text, Integer, TIMESTAMP, UUID, Enum, ForeignKey, ARRAY
+from sqlalchemy import Column, String, Boolean, Text, Integer, TIMESTAMP, UUID, Enum, ForeignKey, ARRAY, Date
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.sql import func
 from sqlalchemy import ForeignKey
@@ -43,15 +43,18 @@ class Candidate(Base):
     created_at = Column(TIMESTAMP, server_default=func.now())
     updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
 
+
 class UserRoleEnum(str, Enum):
     VOTER = "voter"
     CANDIDATE = "candidate"
     ADMIN = "admin"
 
+
 class AccountStatusEnum(str, Enum):
     ACTIVE = "active"
     SUSPENDED = "suspended"
     INACTIVE = "inactive"
+
 
 class Authentication(Base):
     __tablename__ = "authentication"
@@ -68,6 +71,7 @@ class Authentication(Base):
     session_token = Column(String(255))
     session_expiration_time = Column(TIMESTAMP)
 
+
 class Admin(Base):
     __tablename__ = "admin"
 
@@ -79,10 +83,12 @@ class Admin(Base):
     created_at = Column(TIMESTAMP, server_default=func.now())
     updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
 
+
 class ElectionStatusEnum(str, Enum):
     UPCOMING = "upcoming"
     ONGOING = "ongoing"
     COMPLETED = "completed"
+
 
 class Election(Base):
     __tablename__ = "elections"
@@ -99,6 +105,7 @@ class Election(Base):
     created_at = Column(TIMESTAMP, server_default=func.now())
     updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
 
+
 class Ballot(Base):
     __tablename__ = "ballots"
 
@@ -107,6 +114,7 @@ class Ballot(Base):
     election_id = Column(PGUUID(as_uuid=True), ForeignKey("elections.election_id"), nullable=False)
     candidate_id = Column(PGUUID(as_uuid=True), ForeignKey("candidates.candidate_id"), nullable=False)
     voting_time = Column(TIMESTAMP, server_default=func.now())
+
 
 class AuditLog(Base):
     __tablename__ = "audit_log"
@@ -117,17 +125,20 @@ class AuditLog(Base):
     timestamp = Column(TIMESTAMP, server_default=func.now())
     details = Column(Text)  # Optional field for additional details
 
+
 class resultStatusEnum(str, Enum):
     winner = "winner"
     loser = "loser"
     tie = "tie"
 
+
 class election_results(Base):
-    result_id = Column(PGUUID(as_uuid=True), primary_key = True)
+    result_id = Column(PGUUID(as_uuid=True), primary_key=True)
     election_id = Column(PGUUID(as_uuid=True), nullable=False)
     candidate_id = Column(PGUUID(as_uuid=True), nullable=False)
     total_votes = Column(Integer, default=0)
     result_status = Column(Enum(resultStatusEnum))
+
 
 class VoterEligibilityLog(Base):
     __tablename__ = "voter_eligibility_log"
@@ -139,6 +150,7 @@ class VoterEligibilityLog(Base):
     change_reason = Column(Text)
     change_time = Column(TIMESTAMP, server_default=func.now())
 
+
 class Notification(Base):
     __tablename__ = "notifications"
 
@@ -147,8 +159,3 @@ class Notification(Base):
     message = Column(Text, nullable=False)
     sent_at = Column(TIMESTAMP, server_default=func.now())
     read_status = Column(Boolean, default=False)
-
-
-
-
-    

@@ -1,5 +1,6 @@
 from fastapi import APIRouter
-from backend.core.models import PersonId, PollId
+from ..models.person import PersonId
+from ..models.poll import PollId
 from backend.core.operations import db
 
 router = APIRouter(

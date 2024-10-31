@@ -1,10 +1,13 @@
 # crud.py
+from sqlalchemy import Date
 from sqlalchemy.orm import Session
 from .models import Voter, Candidate
 from uuid import UUID
 
+
 # Create a new voter
-def create_voter(db: Session, voter_id: UUID, user_id: UUID, voter_registration_number: str, first_name: str, last_name: str, date_of_birth: str, address: str, phone_number: str):
+def create_voter(db: Session, voter_id: UUID, user_id: UUID, voter_registration_number: str, first_name: str,
+                 last_name: str, date_of_birth: str, address: str, phone_number: str):
     new_voter = Voter(
         voter_id=voter_id,
         user_id=user_id,
@@ -20,13 +23,16 @@ def create_voter(db: Session, voter_id: UUID, user_id: UUID, voter_registration_
     db.refresh(new_voter)
     return new_voter
 
+
 # Read: Get a voter by voter_id
 def get_voter_by_id(db: Session, voter_id: UUID):
     return db.query(Voter).filter(Voter.voter_id == voter_id).first()
 
+
 # Read: Get all voters
 def get_all_voters(db: Session):
     return db.query(Voter).all()
+
 
 # Update: Update a voter's information
 def update_voter(db: Session, voter_id: UUID, **kwargs):
@@ -38,6 +44,7 @@ def update_voter(db: Session, voter_id: UUID, **kwargs):
         db.refresh(voter)
     return voter
 
+
 # Delete: Remove a voter from the database
 def delete_voter(db: Session, voter_id: UUID):
     voter = get_voter_by_id(db, voter_id)
@@ -45,4 +52,3 @@ def delete_voter(db: Session, voter_id: UUID):
         db.delete(voter)
         db.commit()
     return voter
-

@@ -1,15 +1,15 @@
 import asyncio
-from typing import Annotated, Any
+from typing import Annotated
 
 import requests
-from fastapi import APIRouter, Cookie, Request, Form
-from starlette.datastructures import FormData
-from starlette.responses import HTMLResponse, JSONResponse
+from fastapi import APIRouter, Cookie, Form, Request, status
+from fastapi.params import Depends
+from starlette.responses import HTMLResponse, JSONResponse, RedirectResponse
 
-from backend.core import constants
-from backend.core.models import PersonId, Voter
 from backend.core.operations import db
-from backend.temp import poll_id
+from backend.core.operations.getuser import VoterContext, get_voter_context
+from ..constants import get_config
+from ..models.person import PersonId, Voter
 
 router = APIRouter(
     prefix="/voter",
@@ -17,12 +17,29 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
+voterContext = Annotated[VoterContext, Depends(get_voter_context)]
 
-@router.get("/signin/")
+
+@router.get("/signin")
 async def signup_voter() -> HTMLResponse:
-    with open("C:\\Users\\7862s\\Desktop\\Election-System\\frontend\\static\\signin.html") as f:
+    with open("C:\\Users\\7862s\\Desktop\\Election-System\\frontend\\static\\google.html") as f:
         return HTMLResponse(f.read())
     # return FileResponse()
+
+
+@router.get('')
+async def voter(req:Request, voter_context: voterContext):
+    print(list(req.items()))
+    print(voter_context.voter_id)
+    return {'whoami':voter_context.voter_id}
+
+
+@router.post("/postsignin")
+async def login(email: Annotated[str, Form()], password: Annotated[str, Form()]):
+
+    response = RedirectResponse('/voter', status_code=status.HTTP_303_SEE_OTHER,)
+    response.set_cookie(key="session_id", value="your_generated_session_token")
+    return response
 
 
 @router.get("/i/{voter_id}")
@@ -34,13 +51,7 @@ async def get_voter(voter_id: PersonId, cookie: Annotated[str, Cookie()]) -> Vot
 
 @router.put("/i/{voter_id}/joinrequest/{pollid}")
 async def join_poll(cookie:Annotated[str, Cookie(...,)]):
-    db.get_poll(poll_id)
-
-
-@router.post("/signin/")
-async def login(email: Annotated[str, Form()], password: Annotated[str, Form()]):
-    print(email)
-    print(password)
+    ...
 
 
 @router.post("/signin")
@@ -57,7 +68,8 @@ async def auth_callback(request: Request):
         return {"error": "Authorization code not provided"}
 
     # Step 2: Exchange authorization code for access token
-    token_data = constants.google_oauth_creds
+
+    token_data = get_config().google_oauth_creds
     token_response = await asyncio.to_thread(requests.post, token_data['token_uri'], data=token_data)
     token_json = token_response.json()
     access_token = token_json.get("access_token")

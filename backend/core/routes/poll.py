@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Response, UploadFile
 from starlette.responses import RedirectResponse
 
-from backend.core.models import Poll, PollId
+from ..models.poll import Poll, PollId
 from backend.core.operations import db
 
 router = APIRouter(

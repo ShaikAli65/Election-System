@@ -5,15 +5,16 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import RedirectResponse
 
+import backend.utils.makeconfig
 from core import constants
 from core.routes import admin, candidate, poll, portfolio, voter
 
 
 @asynccontextmanager
 async def life_span(_: FastAPI):
-    with open(constants.GOOGLE_OAUTH_SECRETS_PATH) as f:
-        google_oauth_creds = json.load(fp=f)
-        constants.google_oauth_creds = google_oauth_creds
+    with open(constants.CONFIG_FILE_PATH) as f:
+        backend.utils.makeconfig.make_default_config(f)
+
     yield
 
 

@@ -5,10 +5,10 @@ from fastapi import APIRouter, Form, Request
 from fastapi.params import Depends
 from starlette.responses import JSONResponse, RedirectResponse
 
-from ..models import Candidate, Poll, PollId
+from ..models.person import Candidate
+from ..models.poll import Poll, PollId
 from ..operations import db
 from ..operations.parses import parse_poll
-
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
@@ -50,11 +50,11 @@ async def add_candiates(candidate: Annotated[Candidate, Form()]):
 
 @router.get("/getCandidates")
 async def get_candidates():
-    l = []
+    _l = []
     for candidate in db.candidates.values():
-        l.append(candidate)
+        _l.append(candidate)
 
-    return JSONResponse(l)
+    return JSONResponse(_l)
 
 
 @router.delete("/deletePoll")

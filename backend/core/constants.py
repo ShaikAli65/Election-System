@@ -1,8 +1,57 @@
+import contextvars
+import dataclasses
+import re
 from pathlib import Path
 
-DOWNLOAD_PATH = Path("C:\\Users\\7862s\\Desktop\\Election-System\\database")
-PORTFOLIOS_PATH = DOWNLOAD_PATH / Path("portfolios")
-NA_PORTFOLIO = DOWNLOAD_PATH / Path("notavailable.pdf")
-SECRETS_PATH = Path("C:\\Users\\7862s\\Desktop\\Election-System\\secrets")
-GOOGLE_OAUTH_SECRETS_PATH = Path("C:\\Users\\7862s\\Desktop\\Election-System\\secrets\\google_oauth.json")
-google_oauth_creds = None
+
+@dataclasses.dataclass
+class Configurations:
+    version: float
+    app_name: str
+    download_path: Path
+    portfolios_path: Path
+    na_portfolio_path: Path
+    secrets_path: Path
+    google_oauth_secrets_path: Path
+    google_oauth_creds: dict = None
+
+
+@dataclasses.dataclass(slots=True)
+class DBConfigurations:
+    username: str = None
+    password: str = None
+    ip: str = None
+    port: int = None
+    database_name: str = None
+    url: str = None
+
+    def make_url(self, url_frame):
+        self.url = url_frame.format(
+            username=self.username,
+            password=self.password,
+            ip=self.ip,
+            port=self.port,
+            database_name=self.database_name
+        )
+
+    def make_attributes(self, url_frame, url_string):
+        pattern = re.sub(r"{(\w+)}", r"(?P<\1>[^:/@]+)", url_frame)
+        match = re.match(pattern, url_string)
+        if match:
+            extracted_values = match.groupdict()
+            for key, value in extracted_values.items():
+                setattr(self, key, value)
+
+
+CONFIG_FILE_PATH = Path("C:\\Users\\7862s\\Desktop\\Election-System\\backend\\config.ini")
+
+CONFIG = contextvars.ContextVar[Configurations]('config')
+DB_CONFIG = contextvars.ContextVar[DBConfigurations]('dbconfig')
+
+
+def get_config() -> Configurations:
+    return CONFIG.get()
+
+
+def get_dbconfig() -> DBConfigurations:
+    return DB_CONFIG.get()

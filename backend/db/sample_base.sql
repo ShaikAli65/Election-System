@@ -17,11 +17,6 @@ CREATE TABLE voters (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- Last record update time
 );
 
--- Foreign key constraint to reference the authentication table
-ALTER TABLE voters
-ADD CONSTRAINT fk_user_id FOREIGN KEY (user_id) REFERENCES authentication(user_id);
-
-
 
 CREATE TABLE candidates (
     candidate_id UUID PRIMARY KEY,                -- Unique identifier for the candidate
@@ -38,15 +33,11 @@ CREATE TABLE candidates (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- Last record update time
 );
 
+
 CREATE TYPE user_role AS ENUM ('voter', 'candidate', 'admin');
-CREATE TYPE account_status AS ENUM ('active', 'suspended', 'inactive')
+CREATE TYPE account_status AS ENUM ('active', 'suspended', 'inactive');
 
-ALTER TABLE candidates
-ALTER COLUMN user_id TYPE UUID USING user_id::UUID;
-
-ALTER TABLE voters
-ALTER COLUMN user_id TYPE UUID USING user_id::UUID;
-
+-- Foreign key constraint to reference the authentication table
 CREATE TABLE authentication (
     user_id UUID PRIMARY KEY,                        -- Unique identifier for the user
     user_name VARCHAR(255) NOT NULL UNIQUE,          -- Unique username for login
@@ -61,6 +52,17 @@ CREATE TABLE authentication (
     session_expiration_time TIMESTAMP                -- When the session will expire
 );
 
+
+ALTER TABLE voters
+ADD CONSTRAINT fk_user_id FOREIGN KEY (user_id) REFERENCES authentication(user_id);
+
+ALTER TABLE candidates
+ALTER COLUMN user_id TYPE UUID USING user_id::UUID;
+
+ALTER TABLE voters
+ALTER COLUMN user_id TYPE UUID USING user_id::UUID;
+
+
 -- Foreign key constraint to reference the authentication table
 ALTER TABLE candidates
 ADD CONSTRAINT fk_user_id_candidates FOREIGN KEY (user_id) REFERENCES authentication(user_id);
@@ -73,6 +75,14 @@ CREATE TABLE admin (
     assigned_elections UUID[],                    -- List of elections this admin is responsible for (optional)
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,-- Record creation time
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- Last record update time
+);
+
+CREATE TABLE ballots (
+    ballot_id UUID PRIMARY KEY,                   -- Unique identifier for each ballot
+    voter_id UUID NOT NULL,                       -- Foreign key to the voter table
+    election_id UUID NOT NULL,                    -- Foreign key to the election table
+    candidate_id UUID NOT NULL,                   -- Foreign key to the candidate table (who the voter selected)
+    voting_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- When the vote was cast
 );
 
 ALTER TABLE admin
@@ -190,14 +200,6 @@ INSERT INTO candidates (
     TRUE, 
     '2024-10-07 15:45:00', 
     '2024-10-07 15:45:00'
-);
-
-CREATE TABLE ballots (
-    ballot_id UUID PRIMARY KEY,                   -- Unique identifier for each ballot
-    voter_id UUID NOT NULL,                       -- Foreign key to the voter table
-    election_id UUID NOT NULL,                    -- Foreign key to the election table
-    candidate_id UUID NOT NULL,                   -- Foreign key to the candidate table (who the voter selected)
-    voting_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- When the vote was cast
 );
 
 -- Foreign key constraints to reference voter, election, and candidate tables
