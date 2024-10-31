@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign in with Google</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script>
+        function handleCredentialResponse(response) {
+            // Decode the ID token (JWT) and send it to your server or use it directly in your app
+            console.log("Encoded JWT ID token: " + response.credential);
+            // You can post this token to your server or process it as needed
+        }
+
+        window.onload = function () {
+            google.accounts.id.initialize({
+                client_id: "489112235114-tl5r1a1451nva666af8kbdrevjkrmkoi.apps.googleusercontent.com",
+                callback: handleCredentialResponse
+            });
+
+            google.accounts.id.renderButton(
+                document.getElementById("google-signin"),
+                { theme: "outline", size: "large" }  // Customize button style
+            );
+        };
+    </script>
+</head>
+<body>
+    <h2>Sign in to Your Account</h2>
+    <div id="google-signin"></div>
+</body>
+</html>

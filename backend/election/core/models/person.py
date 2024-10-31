@@ -29,4 +29,11 @@ class UserLoginForm(BaseModel):
 
 
 class UserLoggedInCookie(BaseModel):
+    voter_id: str
+
+    def __iter__(self):
+        return iter(('voter_id', self.voter_id))
+
+
+class VoterSignedUp:
     ...

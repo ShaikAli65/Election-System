@@ -7,12 +7,13 @@ from starlette.responses import JSONResponse, RedirectResponse
 
 from ..models.person import Candidate
 from ..models.poll import Poll, PollId
-from ..operations import db
-from ..operations.parses import parse_poll
+from backend.election.db import fakedata
+from backend.election.utils.parses import parse_poll
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 logger.addHandler(logging.StreamHandler())
+
 
 router = APIRouter(
     prefix="/admin",
@@ -51,7 +52,7 @@ async def add_candiates(candidate: Annotated[Candidate, Form()]):
 @router.get("/getCandidates")
 async def get_candidates():
     _l = []
-    for candidate in db.candidates.values():
+    for candidate in fakedata.candidates.values():
         _l.append(candidate)
 
     return JSONResponse(_l)

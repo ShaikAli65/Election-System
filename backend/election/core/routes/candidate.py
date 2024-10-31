@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from ..models.person import PersonId
 from ..models.poll import PollId
-from backend.core.operations import db
+from backend.election.core.constants import CONFIG_FILE_PATH
 
 router = APIRouter(
     prefix="/candidate",

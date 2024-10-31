@@ -1,8 +1,8 @@
 # create_tables.py
-from .database import Base, engine
+from .database import Base, _engine
 from .models import Voter, Candidate, Authentication, Admin, Election, Ballot, AuditLog, election_results, VoterEligibilityLog, Notification
 
 # Create all tables
 if __name__ == "__main__":
-    Base.metadata.create_all(bind=engine)
+    Base.metadata.create_all(bind=_engine)
     print('Tables created Successfully...')

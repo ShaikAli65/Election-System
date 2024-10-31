@@ -4,53 +4,57 @@ from typing import Annotated
 import requests
 from fastapi import APIRouter, Cookie, Form, Request, status
 from fastapi.params import Depends
+from fastapi.security import OAuth2PasswordRequestForm
 from starlette.responses import HTMLResponse, JSONResponse, RedirectResponse
 
-from backend.core.operations import db
-from backend.core.operations.getuser import VoterContext, get_voter_context
-from ..constants import get_config
-from ..models.person import PersonId, Voter
+from core.constants import get_config
+from core.contexts.auth import AuthContext, get_auth_context
+from core.contexts.voter import VoterContext, get_voter_context
+from core.models.person import PersonId, Voter
+from db import fakedata as db
 
 router = APIRouter(
     prefix="/voter",
-    tags=["voter",],
+    tags=["voter", ],
     responses={404: {"description": "Not found"}},
 )
 
 voterContext = Annotated[VoterContext, Depends(get_voter_context)]
+Authenticator = Annotated[AuthContext, Depends(get_auth_context)]
 
 
 @router.get("/signin")
 async def signup_voter() -> HTMLResponse:
-    with open("C:\\Users\\7862s\\Desktop\\Election-System\\frontend\\static\\google.html") as f:
+    with open("C:\\Users\\7862s\\Desktop\\Election-System\\frontend\\static\\signin.html") as f:
         return HTMLResponse(f.read())
-    # return FileResponse()
 
 
 @router.get('')
-async def voter(req:Request, voter_context: voterContext):
+async def voter(req: Request, voter_context: voterContext):
     print(list(req.items()))
     print(voter_context.voter_id)
-    return {'whoami':voter_context.voter_id}
+    return {'whoami': voter_context.voter_id}
 
 
 @router.post("/postsignin")
-async def login(email: Annotated[str, Form()], password: Annotated[str, Form()]):
-
-    response = RedirectResponse('/voter', status_code=status.HTTP_303_SEE_OTHER,)
-    response.set_cookie(key="session_id", value="your_generated_session_token")
-    return response
+async def login(oauth: Annotated[OAuth2PasswordRequestForm, Depends()], authenticator: Authenticator):
+    cookie = authenticator.new_voter_logged_in(oauth)
+    if cookie:
+        response = RedirectResponse('/voter', status_code=status.HTTP_303_SEE_OTHER, )
+        for k, v in cookie:
+            response.set_cookie(key=k, value=v)
+        return response
 
 
 @router.get("/i/{voter_id}")
 async def get_voter(voter_id: PersonId, cookie: Annotated[str, Cookie()]) -> Voter:
-    print("&"*60)
+    print("&" * 60)
     print(cookie)
     return db.voters[voter_id]
 
 
 @router.put("/i/{voter_id}/joinrequest/{pollid}")
-async def join_poll(cookie:Annotated[str, Cookie(...,)]):
+async def join_poll(cookie: Annotated[str, Cookie(..., )]):
     ...
 
 
@@ -78,7 +82,8 @@ async def auth_callback(request: Request):
         return {"error": "Failed to retrieve access token"}
 
     user_info_url = "https://www.googleapis.com/oauth2/v1/userinfo"
-    user_info_response = await asyncio.to_thread(requests.get,user_info_url, headers={"Authorization": f"Bearer {access_token}"})
+    user_info_response = await asyncio.to_thread(requests.get, user_info_url,
+                                                 headers={"Authorization": f"Bearer {access_token}"})
     user_info = user_info_response.json()
 
     response = JSONResponse(content={"user_info": user_info})

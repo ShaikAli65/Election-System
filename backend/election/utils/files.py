@@ -1,6 +1,6 @@
 import shutil
 
-from backend.core.constants import get_config
+from backend.election.core.constants import get_config
 
 
 def get_porfolio_path(poll_id, candidate_id):
