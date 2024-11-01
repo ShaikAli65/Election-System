@@ -1,18 +1,8 @@
+from sqlalchemy import delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy import update, delete
-from models import (Authentication, Candidate, Voter, Election,
-                    Ballot, AuditLog, ElectionResult)
-# from schemas import (AuthenticationCreate, AuthenticationUpdate,
-#                      CandidateCreate, CandidateUpdate,
-#                      VoterCreate, VoterUpdate,
-#                      ElectionCreate, ElectionUpdate,
-#                      BallotCreate, BallotUpdate,
-#                      AdminCreate, AdminUpdate,
-#                      AuditLogCreate, AuditLogUpdate,
-#                      VoterEligibilityLogCreate, VoterEligibilityLogUpdate,
-#                      NotificationCreate, NotificationUpdate,
-#                      ElectionResultCreate, ElectionResultUpdate)
+
+from models import (AuditLog, Authentication, Ballot, Candidate, Election, ElectionResult, Voter)
 
 
 # Authentication CRUD operations
@@ -27,6 +17,7 @@ async def create_authentication(db: AsyncSession, auth):
 async def get_authentication_by_id(db: AsyncSession, user_id: str):
     result = await db.execute(select(Authentication).filter_by(user_id=user_id))
     return result.scalars().first()
+
 
 async def update_authentication(db: AsyncSession, user_id: str, auth_update):
     query = update(Authentication).where(Authentication.user_id == user_id).values(**auth_update.model_dump())
@@ -55,6 +46,7 @@ async def get_candidate_by_id(db: AsyncSession, candidate_id: str):
     result = await db.execute(select(Candidate).filter_by(candidate_id=candidate_id))
     return result.scalars().first()
 
+
 async def update_candidate(db: AsyncSession, candidate_id: str, candidate_update):
     query = update(Candidate).where(Candidate.candidate_id == candidate_id).values(**candidate_update.model_dump())
     await db.execute(query)
@@ -82,15 +74,16 @@ async def get_voter_by_id(db: AsyncSession, voter_id: str):
     result = await db.execute(select(Voter).filter_by(voter_id=voter_id))
     return result.scalars().first()
 
+
 async def update_voter(db: AsyncSession, voter_id: str, voter_update):
-    query = update(Voter).where(Voter.voter_id == voter_id).values(**voter_update.model_dump())
+    query = update(Voter).where(Voter.user_id == voter_id).values(**voter_update.model_dump())
     await db.execute(query)
     await db.commit()
     return await get_voter_by_id(db, voter_id)
 
 
 async def delete_voter(db: AsyncSession, voter_id: str):
-    query = delete(Voter).where(Voter.voter_id == voter_id)
+    query = delete(Voter).where(Voter.user_id == voter_id)
     await db.execute(query)
     await db.commit()
     return {"message": "Voter deleted successfully"}
@@ -108,6 +101,7 @@ async def create_election(db: AsyncSession, election):
 async def get_election_by_id(db: AsyncSession, election_id: str):
     result = await db.execute(select(Election).filter_by(election_id=election_id))
     return result.scalars().first()
+
 
 async def update_election(db: AsyncSession, election_id: str, election_update):
     query = update(Election).where(Election.election_id == election_id).values(**election_update.model_dump())
@@ -144,7 +138,6 @@ async def delete_ballot(db: AsyncSession, ballot_id: str):
     return {"message": "Ballot deleted successfully"}
 
 
-
 # Audit Log CRUD operations
 async def create_audit_log(db: AsyncSession, audit_log):
     new_log = AuditLog(**audit_log.model_dump())
@@ -157,8 +150,6 @@ async def create_audit_log(db: AsyncSession, audit_log):
 async def get_audit_log_by_id(db: AsyncSession, log_id: str):
     result = await db.execute(select(AuditLog).filter_by(log_id=log_id))
     return result.scalars().first()
-
-
 
 
 # Election Result CRUD operations

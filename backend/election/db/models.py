@@ -1,15 +1,16 @@
 # models.py
-from sqlalchemy import Column, String, Boolean, Text, Integer, TIMESTAMP, UUID, Enum, ForeignKey, ARRAY, Date
+from sqlalchemy import Boolean, Column, Enum, ForeignKey, Integer, String, TIMESTAMP, Text
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.sql import func
-from sqlalchemy import ForeignKey
+
 from .database import Base
 
 
 class Voter(Base):
     __tablename__ = "voters"
 
-    user_id = Column(PGUUID(as_uuid=True), ForeignKey("authentication.user_id"),primary_key = True, unique=True, nullable=False)
+    user_id = Column(PGUUID(as_uuid=True), ForeignKey("authentication.user_id"), primary_key=True, unique=True,
+                     nullable=False)
     has_voted = Column(Boolean, default=False)
     election_id = Column(PGUUID(as_uuid=True), ForeignKey("elections.election_id"))
 
@@ -17,13 +18,12 @@ class Voter(Base):
 class Candidate(Base):
     __tablename__ = "candidates"
 
-    candidate_id = Column(PGUUID(as_uuid=True),ForeignKey("authentication.user_id") ,primary_key=True)
-    election_id = Column(PGUUID(as_uuid=True), ForeignKey("elections.election_id") ,nullable=False)
+    candidate_id = Column(PGUUID(as_uuid=True), ForeignKey("authentication.user_id"), primary_key=True)
+    election_id = Column(PGUUID(as_uuid=True), ForeignKey("elections.election_id"), nullable=False)
     candidate_description = Column(Text)
     manifesto_file_path = Column(String(255))
     total_votes = Column(Integer, default=0)
     nomination_date = Column(TIMESTAMP, server_default=func.now())
-
 
 
 class AccountStatusEnum(str, Enum):
@@ -68,8 +68,6 @@ class Election(Base):
     election_status = Column(Enum(ElectionStatusEnum), default="upcoming", nullable=False)
 
 
-
-
 class AuditLog(Base):
     __tablename__ = "audit_log"
 
@@ -88,8 +86,7 @@ class resultStatusEnum(str, Enum):
 
 class ElectionResult(Base):
     result_id = Column(PGUUID(as_uuid=True), primary_key=True)
-    election_id = Column(PGUUID(as_uuid=True),ForeignKey("elections.election_id"), nullable=False)
-    candidate_id = Column(PGUUID(as_uuid=True),ForeignKey("candidates.candidate_id"), nullable=False)
+    election_id = Column(PGUUID(as_uuid=True), ForeignKey("elections.election_id"), nullable=False)
+    candidate_id = Column(PGUUID(as_uuid=True), ForeignKey("candidates.candidate_id"), nullable=False)
     total_votes = Column(Integer, default=0)
     result_status = Column(Enum(resultStatusEnum))
-
