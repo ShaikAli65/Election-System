@@ -1,5 +1,5 @@
 # models.py
-from sqlalchemy import Column, String, Boolean, Text, Integer, TIMESTAMP, UUID, Enum, ForeignKey, ARRAY
+from sqlalchemy import Column, String, Boolean, Text, Integer, TIMESTAMP, UUID, Enum, ForeignKey, ARRAY, Date
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.sql import func
 from sqlalchemy import ForeignKey
