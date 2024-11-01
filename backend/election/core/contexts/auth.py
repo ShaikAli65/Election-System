@@ -1,17 +1,22 @@
-from fastapi.security import OAuth2PasswordRequestForm
-
-from core.models.person import UserLoggedInCookie
+from core.models.person import UserCredentials, UserLoggedInCookie
+from db.database import DictDB
 from repository.auth import AuthRepository
 
 
 class AuthContext:
-    def __int__(self, authrepository: AuthRepository):
+    def __init__(self, authrepository: AuthRepository):
         self._authrepo = authrepository
 
-    def new_voter_logged_in(self, form_data: OAuth2PasswordRequestForm) -> UserLoggedInCookie:
-
+    async def new_voter_logged_in(self, form_data) -> UserLoggedInCookie:
         ...
 
 
-def get_auth_context() -> AuthContext:
+async def get_auth_context() -> AuthContext:
     ...
+
+
+async def sign_in_user(user_creds: UserCredentials):
+
+    repo = AuthRepository(DictDB())
+    context = AuthContext(repo)
+    # await context.new_voter_logged_in()erws

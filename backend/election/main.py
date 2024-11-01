@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from starlette.responses import RedirectResponse
+from starlette.responses import JSONResponse, RedirectResponse
 
 from core.constants import get_config, get_dbconfig
 from db.database import initialize_database
@@ -48,4 +48,5 @@ app.include_router(admin.router)
 
 @app.get("/")
 async def main():
-    return RedirectResponse("/voter/signin")
+    # return RedirectResponse("/voter/signin")
+    return JSONResponse({'hello':1})

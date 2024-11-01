@@ -104,101 +104,101 @@ CREATE TABLE elections (
     total_candidates INT DEFAULT 0,                -- Total number of candidates running in this election
     election_status election_status DEFAULT 'upcoming', -- Status of the election
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,-- Record creation time
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- Last record update time 
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- Last record update time
 );
 
 INSERT INTO authentication (
-    user_id, 
-    user_name, 
-    password_hash, 
-    salt, 
-    user_role, 
-    account_status, 
+    user_id,
+    user_name,
+    password_hash,
+    salt,
+    user_role,
+    account_status,
     email_id
-) VALUES 
+) VALUES
 (
     'b3d77a8c-81cd-4f01-9cfd-1ee71c43b527', -- Matching UUID
-    'candidate1', 
-    'hashedpassword', 
-    'randomsalt', 
-    'candidate', 
-    'active', 
+    'candidate1',
+    'hashedpassword',
+    'randomsalt',
+    'candidate',
+    'active',
     'candidate1@example.com'
 ),
 (
     '7a2b9112-7f45-43b0-bb76-6a499d71cb01', -- Matching UUID
-    'candidate2', 
-    'hashedpassword', 
-    'randomsalt', 
-    'candidate', 
-    'active', 
+    'candidate2',
+    'hashedpassword',
+    'randomsalt',
+    'candidate',
+    'active',
     'candidate2@example.com'
 ),
 (
     'ef9d2b6e-3fdc-4d11-b938-3f43537d8c97', -- Matching UUID
-    'candidate3', 
-    'hashedpassword', 
-    'randomsalt', 
-    'candidate', 
-    'active', 
+    'candidate3',
+    'hashedpassword',
+    'randomsalt',
+    'candidate',
+    'active',
     'candidate3@example.com'
 );
 
 
 INSERT INTO candidates (
-    candidate_id, 
-    user_id, 
-    election_id, 
-    party_name, 
-    manifesto, 
-    manifesto_file_path, 
-    total_votes, 
-    constituency, 
-    nomination_date, 
-    is_approved, 
-    created_at, 
+    candidate_id,
+    user_id,
+    election_id,
+    party_name,
+    manifesto,
+    manifesto_file_path,
+    total_votes,
+    constituency,
+    nomination_date,
+    is_approved,
+    created_at,
     updated_at
-) VALUES 
+) VALUES
 (
-    'e4d909c2-8f45-4f9c-bfba-1bb8e2bca7a1', 
+    'e4d909c2-8f45-4f9c-bfba-1bb8e2bca7a1',
     'b3d77a8c-81cd-4f01-9cfd-1ee71c43b527', -- Replace with a valid UUID
-    '1a3c5e8a-7d8b-4e4a-8f96-c6c9a9f5a9d3', 
-    'Green Party', 
-    'Promoting clean energy and sustainable living.', 
-    '/manifestos/green_party_candidate.pdf', 
-    0, 
-    'Central District', 
-    '2024-10-05 09:00:00', 
-    TRUE, 
-    '2024-10-05 09:00:00', 
+    '1a3c5e8a-7d8b-4e4a-8f96-c6c9a9f5a9d3',
+    'Green Party',
+    'Promoting clean energy and sustainable living.',
+    '/manifestos/green_party_candidate.pdf',
+    0,
+    'Central District',
+    '2024-10-05 09:00:00',
+    TRUE,
+    '2024-10-05 09:00:00',
     '2024-10-05 09:00:00'
 ),
 (
-    'b57fdf20-1a89-4e5a-b29f-6e5f3cb1c2d4', 
+    'b57fdf20-1a89-4e5a-b29f-6e5f3cb1c2d4',
     '7a2b9112-7f45-43b0-bb76-6a499d71cb01', -- Replace with a valid UUID
-    '2f7e3d4c-bc72-4b29-8e6d-29d79a3ab88d', 
-    'Independent', 
-    'Focusing on community-driven projects and transparency.', 
-    '/manifestos/independent_candidate.pdf', 
-    0, 
-    'North Ward', 
-    '2024-10-06 11:30:00', 
-    FALSE, 
-    '2024-10-06 11:30:00', 
+    '2f7e3d4c-bc72-4b29-8e6d-29d79a3ab88d',
+    'Independent',
+    'Focusing on community-driven projects and transparency.',
+    '/manifestos/independent_candidate.pdf',
+    0,
+    'North Ward',
+    '2024-10-06 11:30:00',
+    FALSE,
+    '2024-10-06 11:30:00',
     '2024-10-06 11:30:00'
 ),
 (
-    'c234ef89-dc73-4b20-90a4-1234abcd5678', 
+    'c234ef89-dc73-4b20-90a4-1234abcd5678',
     'ef9d2b6e-3fdc-4d11-b938-3f43537d8c97', -- Replace with a valid UUID
-    'd4e6f8a5-c3ab-4117-8f0b-e7a9b6f2a1d2', 
-    'Progressive Alliance', 
-    'Advocating for education reform and economic growth.', 
-    '/manifestos/progressive_alliance_candidate.pdf', 
-    0, 
-    'South East Constituency', 
-    '2024-10-07 15:45:00', 
-    TRUE, 
-    '2024-10-07 15:45:00', 
+    'd4e6f8a5-c3ab-4117-8f0b-e7a9b6f2a1d2',
+    'Progressive Alliance',
+    'Advocating for education reform and economic growth.',
+    '/manifestos/progressive_alliance_candidate.pdf',
+    0,
+    'South East Constituency',
+    '2024-10-07 15:45:00',
+    TRUE,
+    '2024-10-07 15:45:00',
     '2024-10-07 15:45:00'
 );
 
@@ -260,7 +260,7 @@ CREATE TABLE notifications (
 );
 
 -- Foreign key constraint to reference the authentication table
-ALTER TABLE notifications	
+ALTER TABLE notifications
 ADD CONSTRAINT fk_user_id_notification FOREIGN KEY (user_id) REFERENCES authentication(user_id);
 
 
