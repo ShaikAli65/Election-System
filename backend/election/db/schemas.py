@@ -3,10 +3,12 @@ from uuid import UUID
 from datetime import datetime
 from typing import Optional, List
 
+
 # Base Schema
 class BaseSchema(BaseModel):
     created_at: datetime
     updated_at: datetime
+
 
 # Authentication Schemas
 class AuthenticationBase(BaseSchema):
@@ -15,15 +17,18 @@ class AuthenticationBase(BaseSchema):
     user_role: str
     account_status: str
 
+
 class AuthenticationCreate(AuthenticationBase):
     password_hash: str
     salt: str
+
 
 class AuthenticationUpdate(BaseSchema):
     user_name: Optional[str] = None
     email_id: Optional[EmailStr] = None
     user_role: Optional[str] = None
     account_status: Optional[str] = None
+
 
 # Candidate Schemas
 class CandidateBase(BaseSchema):
@@ -34,14 +39,17 @@ class CandidateBase(BaseSchema):
     constituency: str
     is_approved: bool
 
+
 class CandidateCreate(CandidateBase):
     nomination_date: datetime
+
 
 class CandidateUpdate(BaseSchema):
     party_name: Optional[str] = None
     manifesto: Optional[str] = None
     constituency: Optional[str] = None
     is_approved: Optional[bool] = None
+
 
 # Voter Schemas
 class VoterBase(BaseSchema):
@@ -56,8 +64,10 @@ class VoterBase(BaseSchema):
     is_eligible: bool
     voting_district: str
 
+
 class VoterCreate(VoterBase):
     pass  # All fields are required for creating a voter
+
 
 class VoterUpdate(BaseSchema):
     first_name: Optional[str] = None
@@ -66,6 +76,7 @@ class VoterUpdate(BaseSchema):
     phone_number: Optional[str] = None
     has_voted: Optional[bool] = None
     is_eligible: Optional[bool] = None
+
 
 # Election Schemas
 class ElectionBase(BaseSchema):
@@ -78,8 +89,10 @@ class ElectionBase(BaseSchema):
     total_candidates: int
     election_status: str
 
+
 class ElectionCreate(ElectionBase):
     pass  # All fields are required for creating an election
+
 
 class ElectionUpdate(BaseSchema):
     election_name: Optional[str] = None
@@ -88,6 +101,7 @@ class ElectionUpdate(BaseSchema):
     election_end_date: Optional[datetime] = None
     is_active: Optional[bool] = None
 
+
 # Ballot Schemas
 class BallotBase(BaseModel):
     voter_id: UUID
@@ -95,11 +109,14 @@ class BallotBase(BaseModel):
     candidate_id: UUID
     voting_time: datetime
 
+
 class BallotCreate(BallotBase):
     pass  # All fields are required for creating a ballot
 
+
 class BallotUpdate(BaseModel):
     candidate_id: Optional[UUID] = None
+
 
 # Admin Schemas
 class AdminBase(BaseSchema):
@@ -108,13 +125,16 @@ class AdminBase(BaseSchema):
     permissions: str
     assigned_elections: List[UUID]
 
+
 class AdminCreate(AdminBase):
     pass  # All fields are required for creating an admin
+
 
 class AdminUpdate(BaseSchema):
     role: Optional[str] = None
     permissions: Optional[str] = None
     assigned_elections: Optional[List[UUID]] = None
+
 
 # Audit Log Schemas
 class AuditLogBase(BaseSchema):
@@ -122,8 +142,10 @@ class AuditLogBase(BaseSchema):
     action: str
     details: str
 
+
 class AuditLogCreate(AuditLogBase):
     pass
+
 
 # Voter Eligibility Log Schemas
 class VoterEligibilityLogBase(BaseModel):
@@ -132,23 +154,17 @@ class VoterEligibilityLogBase(BaseModel):
     is_eligible: bool
     change_reason: str
 
+
 class VoterEligibilityLogCreate(VoterEligibilityLogBase):
     pass
 
-# Notification Schemas
-class NotificationBase(BaseModel):
-    user_id: UUID
-    message: str
-    read_status: bool
-
-class NotificationCreate(NotificationBase):
-    pass
 
 # Election Result Schemas
 class ElectionResultBase(BaseModel):
     election_id: UUID
     candidate_id: UUID
     votes: int
+
 
 class ElectionResultCreate(ElectionResultBase):
     pass

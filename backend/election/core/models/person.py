@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 PersonId = str
 
@@ -23,11 +23,6 @@ class Candidate(Person):
     """Candidate Model"""
 
 
-class UserLoginForm(BaseModel):
-    username: str
-    password: str
-
-
 class UserLoggedInCookie(BaseModel):
     voter_id: str
 
@@ -37,3 +32,14 @@ class UserLoggedInCookie(BaseModel):
 
 class VoterSignedUp:
     ...
+
+
+class UserCredentials(BaseModel):
+    model_config = ConfigDict(extra='allow')
+
+    name: str
+    email: EmailStr
+    aud: str = Field(pattern=r'^\d+-[a-z0-9]+-[a-z0-9]+\.apps\.googleusercontent\.com$')
+    user_id: str = Field(alias='sub')
+    expires: int = Field(alias='exp')
+    token: str = Field(alias='jti')
