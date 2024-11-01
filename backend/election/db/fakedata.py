@@ -1,7 +1,7 @@
 # Description: This file contains the database operations for the application.
 from itertools import islice
 
-from backend.core.models import Poll, PollStatus
+from backend.election.core.models.poll import Poll, PollStatus
 
 candidates = {
     'candidate_Alice': {

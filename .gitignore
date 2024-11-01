@@ -1,4 +1,6 @@
 secrets/*
+!secrets/.gitkeep
+
 *.ini
 !default*.ini
 *.logs

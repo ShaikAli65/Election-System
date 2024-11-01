@@ -1,19 +1,25 @@
-import json
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import RedirectResponse
 
+from core.constants import get_config, get_dbconfig
+from db.database import initialize_database
+from utils.makeconfig import load_db_configs, make_default_config
 from core import constants
 from core.routes import admin, candidate, poll, portfolio, voter
 
 
 @asynccontextmanager
 async def life_span(_: FastAPI):
-    with open(constants.GOOGLE_OAUTH_SECRETS_PATH) as f:
-        google_oauth_creds = json.load(fp=f)
-        constants.google_oauth_creds = google_oauth_creds
+    with open(constants.CONFIG_FILE_PATH) as f:
+        make_default_config(f)
+        f.seek(0)
+        load_db_configs(f)
+    # print(get_dbconfig())
+    # print(get_config())
+    await initialize_database()
     yield
 
 

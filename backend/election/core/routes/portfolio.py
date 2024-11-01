@@ -3,8 +3,8 @@ from typing import Annotated
 from fastapi import APIRouter, Query
 from starlette.responses import FileResponse
 
-from backend.core.files import get_porfolio_path
-from backend.core.models import PersonId, PollId
+from backend.election.utils.files import get_porfolio_path
+from ..models.poll import PollId
 
 router = APIRouter(
     prefix="/portfolio",
