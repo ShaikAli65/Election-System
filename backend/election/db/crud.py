@@ -2,7 +2,7 @@ from sqlalchemy import delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
-from models import (AuditLog, Authentication, Ballot, Candidate, Election, ElectionResult, Voter)
+from schemas import (AuditLog, Authentication, Ballot, Candidate, Election, ElectionResult, Voter)
 
 
 # Authentication CRUD operations

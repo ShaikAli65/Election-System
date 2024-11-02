@@ -1,9 +1,10 @@
 # database.py
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator, Callable
+from typing import Callable
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.util import win32
 
 from core.constants import get_dbconfig
 
@@ -12,7 +13,6 @@ Base = declarative_base()
 
 # global reference for sqlalchemy engine as per the spec
 _engine = None
-
 
 _AsyncSessionLocal: async_sessionmaker | None = None
 
@@ -31,6 +31,14 @@ class DB:
     def __init__(self):
         ...
 
+    @asynccontextmanager
+    async def __call__(self):
+        async with self.start() as y:
+            yield y
+
+    @asynccontextmanager
+    async def start(self): ...  # -> AsyncGenerator[AsyncSession, None]: ...
+
 
 class AsyncDB(DB):
     """
@@ -43,11 +51,12 @@ class AsyncDB(DB):
         self._sqlalchemy_session_maker = async_session_maker
 
     @asynccontextmanager
-    async def start(self) -> AsyncGenerator[AsyncSession, None]:
-        session = None
+    async def start(self):
+        session: AsyncSession | None = None
         try:
             session = self._sqlalchemy_session_maker()
             yield session
+            await session.commit()
         finally:
             if session:
                 await session.close()
@@ -60,13 +69,17 @@ class DictDB(DB):
         super().__init__()
         self._dict = DictDB.session_data
 
+    @asynccontextmanager
+    async def start(self):
+        yield self._dict
+
 
 async def initialize_database():
     global _engine, _AsyncSessionLocal
     dbconfig = get_dbconfig()
     _engine = create_async_engine(
         dbconfig.url,
-        **dbconfig.engine_args
+        **dbconfig.engine_args,
     )
     _AsyncSessionLocal = async_sessionmaker(
         bind=_engine,

@@ -1,7 +1,8 @@
-from fastapi import APIRouter
-from ..models.person import PersonId
-from ..models.poll import PollId
-from backend.election.core.constants import CONFIG_FILE_PATH
+from typing import Annotated
+
+from fastapi import APIRouter, Query
+
+from core.contexts.admin import get_admin_context
 
 router = APIRouter(
     prefix="/candidate",
@@ -11,7 +12,6 @@ router = APIRouter(
 
 
 @router.get("/")
-async def get_candidate(poll_id: PollId, candidate_id: PersonId):
-    candidate = db.get_candidate(candidate_id)
-    return candidate
-
+async def get_candidates(page: Annotated[int, Query()] = 0, page_size: Annotated[int, Query()] = 10):
+    admin_context = get_admin_context()
+    await admin_context.get_candidates()

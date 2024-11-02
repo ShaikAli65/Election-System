@@ -5,7 +5,8 @@ from fastapi import APIRouter, Form, Request
 from fastapi.params import Depends
 from starlette.responses import JSONResponse, RedirectResponse
 
-from ..models.person import Candidate
+from ..contexts.admin import get_admin_context
+from ..models.user import CandidateFromAdmin
 from ..models.poll import Poll, PollId
 from backend.election.db import fakedata
 from backend.election.utils.parses import parse_poll
@@ -35,6 +36,7 @@ async def create_poll(poll: Poll = Depends(parse_poll)):
     :return:
     """
     print(poll)
+    
     return JSONResponse({"poll_id": poll.poll_id,})
 
 
@@ -44,7 +46,9 @@ async def update_poll():
 
 
 @router.post("/addCandidate")
-async def add_candiates(candidate: Annotated[Candidate, Form()]):
+async def add_candiates(candidate: Annotated[CandidateFromAdmin, Form()]):
+    admin_context = get_admin_context()
+    await admin_context.add_candidate()
     print("recieved a candidate", candidate)
     return candidate.model_dump()
 

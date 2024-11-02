@@ -7,7 +7,7 @@ from dataclasses import Field
 from pathlib import Path
 
 
-@dataclasses.dataclass
+@dataclasses.dataclass(slots=True)
 class Configurations:
     version: float
     app_name: str
@@ -16,7 +16,6 @@ class Configurations:
     na_portfolio_path: Path
     secrets_path: Path
     google_oauth_secrets_path: Path
-    google_oauth_creds: dict = None
 
     def __str__(self):
         for k, v in self.__dict__.items():
@@ -24,7 +23,18 @@ class Configurations:
         return ""
 
 
-@dataclasses.dataclass
+@dataclasses.dataclass(slots=True)
+class GoogleOAuthCreds:
+    client_id: str
+    auth_uri: str
+    token_uri: str
+    auth_provider_x509_cert_url: str
+    client_secret: str
+    redirect_uris: list[str]
+    javascript_origins: list[str]
+
+
+@dataclasses.dataclass(slots=True)
 class DBConfigurations:
     username: str = None
     password: str = None
@@ -54,21 +64,33 @@ class DBConfigurations:
         else:
             raise ValueError("database url matching failed")
 
-    def __str__(self):
-        for k, v in self.__dict__.items():
-            print(k, v)
-        return ""
+
+@dataclasses.dataclass(slots=True)
+class JWTConfigurations:
+    secret_key: str
+    algorithm: str
+    expire_time_min: int
 
 
 CONFIG_FILE_PATH = Path("C:\\Users\\7862s\\Desktop\\Election-System\\backend\\config.ini")
 
-CONFIG = contextvars.ContextVar[Configurations]('config')
-DB_CONFIG = contextvars.ContextVar[DBConfigurations]('dbconfig')
+CONFIG: Configurations | None = None
+DB_CONFIG: DBConfigurations | None = None
+GOOGLE_AUTH_CREDS: GoogleOAuthCreds | None = None
+JWT_CONFIG: JWTConfigurations | None = None
 
 
 def get_config() -> Configurations:
-    return CONFIG.get()
+    return CONFIG
 
 
 def get_dbconfig() -> DBConfigurations:
-    return DB_CONFIG.get()
+    return DB_CONFIG
+
+
+def get_google_oauth_creds() -> GoogleOAuthCreds:
+    return GOOGLE_AUTH_CREDS
+
+
+def get_jwt_config() -> JWTConfigurations:
+    return JWT_CONFIG

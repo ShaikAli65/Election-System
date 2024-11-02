@@ -1,14 +1,16 @@
+import uuid
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from starlette.responses import JSONResponse, RedirectResponse
+from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.responses import RedirectResponse
 
-from core.constants import get_config, get_dbconfig
-from db.database import initialize_database
-from utils.makeconfig import load_db_configs, make_default_config
 from core import constants
 from core.routes import admin, candidate, poll, portfolio, voter
+from db.database import AsyncDB, db_session_factory, initialize_database
+from db.schemas import Authentication
+from utils.makeconfig import load_db_configs, make_default_config
 
 
 @asynccontextmanager
@@ -17,11 +19,9 @@ async def life_span(_: FastAPI):
         make_default_config(f)
         f.seek(0)
         load_db_configs(f)
-    # print(get_dbconfig())
-    # print(get_config())
+
     await initialize_database()
     yield
-
 
 app = FastAPI(
     title="ElectionSystem",
@@ -48,5 +48,4 @@ app.include_router(admin.router)
 
 @app.get("/")
 async def main():
-    # return RedirectResponse("/voter/signin")
-    return JSONResponse({'hello':1})
+    return RedirectResponse("/docs")

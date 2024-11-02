@@ -11,7 +11,9 @@ CREATE TABLE candidates (
     candidate_description TEXT,                   -- Optional text-based manifesto content
     manifesto_file_path VARCHAR(255),             -- Path or URL to the manifesto file (stored on the server or cloud)
     total_votes INT DEFAULT 0,                    -- Count of votes received
-    nomination_date TIMESTAMP DEFAULT NOW()       -- Date the candidate was nominated
+    nomination_date TIMESTAMP DEFAULT NOW(),       -- Date the candidate was nominated
+    candidate_name VARCHAR(255),
+    email_id VARCHAR(255)
 );
 
 
@@ -19,7 +21,7 @@ CREATE TABLE candidates (
 -- Foreign key constraint to reference the authentication table
 CREATE TABLE authentication (
     user_id UUID PRIMARY KEY,                        -- Unique identifier for the user
-    user_name VARCHAR(255) NOT NULL UNIQUE,          -- Unique username for login
+    user_name VARCHAR(255) NOT NULL UNIQUE,          -- Username for login
     email_id VARCHAR(255) NOT NULL UNIQUE            -- Email ID, must be unique
     
 );

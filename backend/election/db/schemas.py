@@ -1,170 +1,94 @@
-from pydantic import BaseModel, EmailStr
-from uuid import UUID
-from datetime import datetime
-from typing import Optional, List
+# schemas.py
+from sqlalchemy import Boolean, Column, Enum, ForeignKey, Integer, String, TIMESTAMP, Text
+from sqlalchemy.dialects.postgresql import UUID as PGUUID
+from sqlalchemy.sql import func
+
+from .database import Base
 
 
-# Base Schema
-class BaseSchema(BaseModel):
-    created_at: datetime
-    updated_at: datetime
+class Voter(Base):
+    __tablename__ = "voters"
+
+    user_id = Column(PGUUID(as_uuid=True), ForeignKey("authentication.user_id"), primary_key=True, unique=True,
+                     nullable=False)
+    has_voted = Column(Boolean, default=False)
+    election_id = Column(PGUUID(as_uuid=True), ForeignKey("elections.election_id"))
 
 
-# Authentication Schemas
-class AuthenticationBase(BaseSchema):
-    user_name: str
-    email_id: EmailStr
-    user_role: str
-    account_status: str
+class Candidate(Base):
+    __tablename__ = "candidates"
+
+    candidate_id = Column(PGUUID(as_uuid=True), ForeignKey("authentication.user_id"), primary_key=True)
+    election_id = Column(PGUUID(as_uuid=True), ForeignKey("elections.election_id"), nullable=False)
+    candidate_description = Column(Text)
+    manifesto_file_path = Column(String(255))
+    total_votes = Column(Integer, default=0)
+    nomination_date = Column(TIMESTAMP, server_default=func.now())
 
 
-class AuthenticationCreate(AuthenticationBase):
-    password_hash: str
-    salt: str
+class AccountStatusEnum(str, Enum):
+    ACTIVE = "active"
+    SUSPENDED = "suspended"
+    INACTIVE = "inactive"
 
 
-class AuthenticationUpdate(BaseSchema):
-    user_name: Optional[str] = None
-    email_id: Optional[EmailStr] = None
-    user_role: Optional[str] = None
-    account_status: Optional[str] = None
+class Authentication(Base):
+    __tablename__ = "authentication"
+
+    user_id = Column(PGUUID(as_uuid=True), primary_key=True)  # UUID type for primary key
+    user_name = Column(String(255), unique=True, nullable=False)
+    email_id = Column(String(255), unique=True, nullable=False)
 
 
-# Candidate Schemas
-class CandidateBase(BaseSchema):
-    user_id: UUID
-    election_id: UUID
-    party_name: str
-    manifesto: str
-    constituency: str
-    is_approved: bool
+class ElectionStatusEnum(str, Enum):
+    UPCOMING = "upcoming"
+    ONGOING = "ongoing"
+    COMPLETED = "completed"
 
 
-class CandidateCreate(CandidateBase):
-    nomination_date: datetime
+class Ballot(Base):
+    __tablename__ = "ballots"
+
+    ballot_id = Column(PGUUID(as_uuid=True), primary_key=True)
+    voter_id = Column(PGUUID(as_uuid=True), ForeignKey("voters.user_id"), nullable=False)
+    election_id = Column(PGUUID(as_uuid=True), ForeignKey("elections.election_id"), nullable=False)
+    candidate_id = Column(PGUUID(as_uuid=True), ForeignKey("candidates.candidate_id"), nullable=False)
+    voting_time = Column(TIMESTAMP, server_default=func.now())
 
 
-class CandidateUpdate(BaseSchema):
-    party_name: Optional[str] = None
-    manifesto: Optional[str] = None
-    constituency: Optional[str] = None
-    is_approved: Optional[bool] = None
+class Election(Base):
+    __tablename__ = "elections"
+
+    election_id = Column(PGUUID(as_uuid=True), primary_key=True)
+    election_name = Column(String(255), nullable=False)
+    election_start_date = Column(TIMESTAMP, nullable=False)
+    election_end_date = Column(TIMESTAMP, nullable=False)
+    total_voters = Column(Integer, default=0)
+    total_candidates = Column(Integer, default=0)
+    election_status = Column(Enum(ElectionStatusEnum()), default="upcoming", nullable=False)
 
 
-# Voter Schemas
-class VoterBase(BaseSchema):
-    user_id: UUID
-    voter_registration_number: str
-    first_name: str
-    last_name: str
-    date_of_birth: datetime
-    address: str
-    phone_number: str
-    has_voted: bool
-    is_eligible: bool
-    voting_district: str
+class AuditLog(Base):
+    __tablename__ = "audit_log"
+
+    log_id = Column(PGUUID(as_uuid=True), primary_key=True)
+    user_id = Column(PGUUID(as_uuid=True), ForeignKey("authentication.user_id"), nullable=False)
+    action = Column(String(255), nullable=False)
+    timestamp = Column(TIMESTAMP, server_default=func.now())
+    details = Column(Text)  # Optional field for additional details
 
 
-class VoterCreate(VoterBase):
-    pass  # All fields are required for creating a voter
+class resultStatusEnum(str, Enum):
+    winner = "winner"
+    loser = "loser"
+    tie = "tie"
 
 
-class VoterUpdate(BaseSchema):
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
-    address: Optional[str] = None
-    phone_number: Optional[str] = None
-    has_voted: Optional[bool] = None
-    is_eligible: Optional[bool] = None
+class ElectionResult(Base):
+    __tablename__ = "election_results"
 
-
-# Election Schemas
-class ElectionBase(BaseSchema):
-    election_name: str
-    election_type: str
-    election_start_date: datetime
-    election_end_date: datetime
-    is_active: bool
-    total_voters: int
-    total_candidates: int
-    election_status: str
-
-
-class ElectionCreate(ElectionBase):
-    pass  # All fields are required for creating an election
-
-
-class ElectionUpdate(BaseSchema):
-    election_name: Optional[str] = None
-    election_type: Optional[str] = None
-    election_start_date: Optional[datetime] = None
-    election_end_date: Optional[datetime] = None
-    is_active: Optional[bool] = None
-
-
-# Ballot Schemas
-class BallotBase(BaseModel):
-    voter_id: UUID
-    election_id: UUID
-    candidate_id: UUID
-    voting_time: datetime
-
-
-class BallotCreate(BallotBase):
-    pass  # All fields are required for creating a ballot
-
-
-class BallotUpdate(BaseModel):
-    candidate_id: Optional[UUID] = None
-
-
-# Admin Schemas
-class AdminBase(BaseSchema):
-    user_id: UUID
-    role: str
-    permissions: str
-    assigned_elections: List[UUID]
-
-
-class AdminCreate(AdminBase):
-    pass  # All fields are required for creating an admin
-
-
-class AdminUpdate(BaseSchema):
-    role: Optional[str] = None
-    permissions: Optional[str] = None
-    assigned_elections: Optional[List[UUID]] = None
-
-
-# Audit Log Schemas
-class AuditLogBase(BaseSchema):
-    user_id: UUID
-    action: str
-    details: str
-
-
-class AuditLogCreate(AuditLogBase):
-    pass
-
-
-# Voter Eligibility Log Schemas
-class VoterEligibilityLogBase(BaseModel):
-    voter_id: UUID
-    changed_by: UUID
-    is_eligible: bool
-    change_reason: str
-
-
-class VoterEligibilityLogCreate(VoterEligibilityLogBase):
-    pass
-
-
-# Election Result Schemas
-class ElectionResultBase(BaseModel):
-    election_id: UUID
-    candidate_id: UUID
-    votes: int
-
-
-class ElectionResultCreate(ElectionResultBase):
-    pass
+    result_id = Column(PGUUID(as_uuid=True), primary_key=True)
+    election_id = Column(PGUUID(as_uuid=True), ForeignKey("elections.election_id"), nullable=False)
+    candidate_id = Column(PGUUID(as_uuid=True), ForeignKey("candidates.candidate_id"), nullable=False)
+    total_votes = Column(Integer, default=0)
+    result_status = Column(Enum(resultStatusEnum()))

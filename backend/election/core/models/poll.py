@@ -2,7 +2,7 @@ import enum
 
 from pydantic import BaseModel, FilePath, FutureDate
 
-from .person import PersonId as _PId
+from .user import PersonId as _PId
 
 
 PollId = str
