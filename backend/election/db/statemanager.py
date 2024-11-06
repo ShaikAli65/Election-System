@@ -49,9 +49,7 @@ async def activate_db_timed_triggers():
 
 async def _state_trigger_to_ongoing(trigger_time_in_secs, election_id):
     try:
-        if trigger_time_in_secs > 0:
-            await asyncio.sleep(trigger_time_in_secs)
-
+        await _may_be_sleep(trigger_time_in_secs)
         async_db = AsyncDB(db_session_factory)
         poll_repo = PollRepository(async_db)
         async with poll_repo.database() as async_session:
@@ -61,6 +59,11 @@ async def _state_trigger_to_ongoing(trigger_time_in_secs, election_id):
     except Exception as e:
         traceback.print_exc()
         print(e)
+
+
+async def _may_be_sleep(time_delta):
+    if time_delta > 0:
+        await asyncio.sleep(time_delta)
 
 
 async def _state_trigger(async_session, election_id, set_status_to):
@@ -82,8 +85,7 @@ def _spawn_election_finalizer(end_datetime: datetime, election_id, task_add_list
 
 async def _state_trigger_to_completed(trigger_time_in_secs, election_id):
 
-    if trigger_time_in_secs > 0:
-        await asyncio.sleep(trigger_time_in_secs)
+    await _may_be_sleep(trigger_time_in_secs)
 
     async_db = AsyncDB(db_session_factory)
     poll_repo = PollRepository(async_db)

@@ -1,5 +1,7 @@
 secrets/*
 !secrets/.gitkeep
+database/portfolios/*
+!database/portfolios/notavailable.pdf
 
 *.ini
 !default*.ini
