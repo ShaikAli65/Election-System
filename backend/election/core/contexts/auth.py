@@ -90,7 +90,7 @@ async def get_auth_context(request: Request) -> AuthContext:
     try:
         await context.from_cookie(cookie)
     except ValueError as ve:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(ve))
+        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail=str(ve))
     except JWTError as je:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired token") from je
 

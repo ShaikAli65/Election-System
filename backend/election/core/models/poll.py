@@ -40,10 +40,6 @@ class PollMetaData(BaseModel):
     validation_regex: str
 
 
-class Poll(PollMetaData):
-    candidates: list[CandidateInPoll]
-
-
 class PollInDb(PollMetaData):
     model_config = ConfigDict(from_attributes=True)
 
@@ -52,12 +48,20 @@ class PollInDb(PollMetaData):
     total_candidates: int = 0
 
 
+class Poll(PollMetaData):
+    candidates: list[CandidateInPoll]
+
+
+class PollShareableView(Poll):
+    """A poll that is sent to admin"""
+    model_config = ConfigDict(from_attributes=True)
+    election_status: str
+
+
 class PollShareable(Poll):
     """A poll that is sent to a normal user"""
     model_config = ConfigDict(from_attributes=True)
-
-    election_status: str
-    is_joined: bool
+    is_joined: bool = False
 
 
 class PollView(BaseModel):
@@ -71,8 +75,7 @@ class PollView(BaseModel):
 
 @dataclass(slots=True)
 class BallotEntry:
-    voter_id:UUID
-    election_id:UUID
-    candidate_id:UUID
+    voter_id: UUID
+    election_id: UUID
+    candidate_id: UUID
     voting_time: datetime
-

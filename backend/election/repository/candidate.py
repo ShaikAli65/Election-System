@@ -34,11 +34,7 @@ class CandidateRepository(Repository):
     async def get_candidates_in_election(self, poll_id):
         async with self.database() as async_session:
             async_session: AsyncSession
-            query = select(
-                CandidateSchema
-            ).where(
-                CandidateSchema.election_id == poll_id
-            )
+            query = select(CandidateSchema).where(CandidateSchema.election_id == poll_id)
             result = await async_session.execute(query)
-            candidates = result.scalars().all()
-            return candidates
+            return result.scalars().all()
+

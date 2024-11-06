@@ -27,9 +27,9 @@ class VoterRepository(Repository):
                 )
             )
 
-            voter_entry = (await async_session.execute(query)).first().tuple()
+            voter_entry = (await async_session.execute(query)).first()
             if voter_entry:
-                voter_entry = voter_entry[0]
+                voter_entry = voter_entry.tuple()[0]
                 return VoterInDb.model_validate(voter_entry)
             return None
 

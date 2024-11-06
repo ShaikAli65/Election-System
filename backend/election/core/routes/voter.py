@@ -2,15 +2,17 @@ import traceback
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, HTTPException, status
 from fastapi.params import Depends, Form
+from sqlalchemy.exc import IntegrityError
 from starlette.responses import JSONResponse
 from starlette.status import HTTP_202_ACCEPTED
 
 from election.core.contexts.admin import adminContext
 from election.core.contexts.auth import AuthContext, sign_in_user
+from election.core.contexts.email import send_email
 from election.core.contexts.user import userContext
-from election.core.models.poll import CandidateInPoll, PollId, PollShareable
+from election.core.models.poll import CandidateInPoll, PollId, PollShareable, PollShareableView
 from election.core.models.user import PersonId
 from election.db.database import AsyncDB, db_session_factory
 from election.repository.candidate import CandidateRepository
@@ -56,17 +58,26 @@ async def get_polls(_admin_context: adminContext, _: userContext):
     return views
 
 
-@router.post("/castvote")
+@router.post("/castVote")
 async def cast_vote(
         poll_id: Annotated[PollId, Form()],
         candidate_id: Annotated[PersonId, Form()],
-        user_context: userContext
+        user_context: userContext,
+        background_tasks: BackgroundTasks,
 ):
     try:
         await user_context.cast_vote(poll_id, candidate_id)
     except ReferenceError as re:
         traceback.print_exc()
         raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail=str(re))
+    except IntegrityError as ie:
+        traceback.print_exc(limit=10)
+        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail=str(ie))
+    recipient = user_context.user.email_id
+
+    # body = "You have voted to a poll"
+    # background_tasks.add_task(send_email, recipient, "casting a vote", body)
+
     return JSONResponse(content={"status": "voted successfully casted"}, status_code=HTTP_202_ACCEPTED)
 
 

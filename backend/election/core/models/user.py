@@ -23,7 +23,7 @@ class VoterInDb(BaseModel):
 
 class CandidateFromAdmin(BaseModel):
     """Candidate Model"""
-    candidate_id: UUID = Field(default_factory=uuid4, alias='candidateId')
+    candidate_id: UUID = Field(default_factory=uuid4)
     word_from_candidate: str = ""
     email_id: EmailStr = "q@a.com"
     candidate_name: str = ""
@@ -33,7 +33,7 @@ class CandidateParsed(CandidateFromAdmin):
     manifesto_file_path: str = ""
     total_votes: int = 0
     nomination_date: datetime = Field(default_factory=datetime.now)
-    election_id: UUID
+    election_id: UUID = None
 
 
 class UserLoggedInCookie(BaseModel):

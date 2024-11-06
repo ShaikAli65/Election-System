@@ -3,11 +3,11 @@ from uuid import UUID
 
 from fastapi import APIRouter, Request
 from fastapi.params import Depends
-from starlette.responses import RedirectResponse, Response, StreamingResponse
-from election.core.routes import poll
+
 from election.core.contexts.admin import AdminContext, adminContext, get_admin_context
-from election.core.models.poll import CandidateInPoll, Poll, PollId, PollShareable
+from election.core.models.poll import CandidateInPoll, Poll, PollId, PollShareableView
 from election.db.database import AsyncDB, db_session_factory
+from election.db.statemanager import add_new_timed_trigger
 from election.repository.candidate import CandidateRepository
 from election.repository.poll import PollRepository
 from election.utils.parses import parse_poll
@@ -30,7 +30,7 @@ async def get_poll(poll_id: PollId):
     can_repo = CandidateRepository(AsyncDB(db_session_factory))
 
     candidates = await can_repo.get_candidates_in_election(poll_id)
-    p = PollShareable(
+    p = PollShareableView(
         election_id=poll_in_db.election_id,
         title=poll_in_db.title,
         description=poll_in_db.description,
@@ -50,8 +50,9 @@ async def create_poll(poll: Poll = Depends(parse_poll), _admin_context: AdminCon
     :param poll:
     :return:
     """
-    print(poll.model_dump())
+    # print(poll.model_dump())
     await _admin_context.create_poll(poll)
+    await add_new_timed_trigger(poll, _admin_context)
     print(poll)
     return poll.election_id
 
