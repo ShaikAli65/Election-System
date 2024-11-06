@@ -1,19 +1,18 @@
-# database.py
+import json
 from contextlib import asynccontextmanager
 from typing import Callable
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.util import win32
 
-from core.constants import get_dbconfig
+from election.core import constants
+from election.core.constants import get_dbconfig
 
 # Base class for models
 Base = declarative_base()
 
 # global reference for sqlalchemy engine as per the spec
 _engine = None
-
 _AsyncSessionLocal: async_sessionmaker | None = None
 
 
@@ -28,8 +27,6 @@ def get_alchemy_engine():
 
 
 class DB:
-    def __init__(self):
-        ...
 
     @asynccontextmanager
     async def __call__(self):
@@ -72,6 +69,10 @@ class DictDB(DB):
     @asynccontextmanager
     async def start(self):
         yield self._dict
+        # with open(get_dbconfig().inmemory_dict_path, 'w+') as f:
+        #     for k,v in self._dict:
+        #         v.model_dump()
+        #     json.dump(self._dict,f)
 
 
 async def initialize_database():
@@ -85,3 +86,9 @@ async def initialize_database():
         bind=_engine,
         expire_on_commit=False,
     )
+    # d = {}
+    #
+    # with open(get_dbconfig().inmemory_dict_path) as f:
+    #     d = json.load(f)
+    # DictDB.session_data = d
+    #
