@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Query
 from starlette.responses import FileResponse
 
-from backend.election.utils.files import get_porfolio_path
+from election.utils.files import get_porfolio_path
 from ..models.poll import PollId
 
 router = APIRouter(
@@ -20,4 +20,6 @@ async def get_portfolio(
 ):
     print("get PortFolioId", poll_id, candidate_id)
     file_path = get_porfolio_path(poll_id, candidate_id)
-    return FileResponse(file_path, media_type='application/pdf', filename=f"{candidate_id}.pdf")
+    print(file_path)
+    file_resp = FileResponse(file_path, media_type='application/pdf', filename=f"{candidate_id}.pdf")
+    return file_resp
