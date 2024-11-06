@@ -1,9 +1,7 @@
 # this module is not allowed to have any other project based imports
 
-import contextvars
 import dataclasses
 import re
-from dataclasses import Field
 from pathlib import Path
 
 
@@ -16,6 +14,7 @@ class Configurations:
     na_portfolio_path: Path
     secrets_path: Path
     google_oauth_secrets_path: Path
+    gmail_path: Path
 
     def __str__(self):
         return ", ".join(str(k) for k in self.__dict__.items())

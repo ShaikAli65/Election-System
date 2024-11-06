@@ -21,6 +21,7 @@ def make_default_config(config_fd: "A file descriptor"):
         na_portfolio_path=Path(paths['PORTFOLIOS_PATH']) / Path(paths['NA_PORTFOLIO']),
         secrets_path=Path(paths['SECRETS_PATH']),
         google_oauth_secrets_path=Path(paths['GOOGLE_OAUTH_SECRETS_PATH']),
+        gmail_path= Path(paths['GMAIL_PATH']),
     )
 
     with open(get_config().secrets_path / Path("google_oauth.json")) as f:
