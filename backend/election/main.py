@@ -1,16 +1,15 @@
-import uuid
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import RedirectResponse
 
-from core import constants
-from core.routes import admin, candidate, poll, portfolio, voter
-from db.database import AsyncDB, db_session_factory, initialize_database
-from db.schemas import Authentication
-from utils.makeconfig import load_db_configs, make_default_config
+from election.core import constants
+from election.core.contexts.admin import admin_init
+from election.core.routes import admin, candidate, poll, portfolio, voter
+from election.db import database
+from election.db.statemanager import activate_db_timed_triggers, finalize
+from election.utils.makeconfig import load_db_configs, make_default_config
 
 
 @asynccontextmanager
@@ -19,8 +18,10 @@ async def life_span(_: FastAPI):
         make_default_config(f)
         f.seek(0)
         load_db_configs(f)
-
-    await initialize_database()
+    await database.initialize_database()
+    admin_init()
+    await activate_db_timed_triggers()
+    await finalize()
     yield
 
 app = FastAPI(
