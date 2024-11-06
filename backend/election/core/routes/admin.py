@@ -1,20 +1,20 @@
 import logging
-from typing import Annotated
+from uuid import UUID
 
-from fastapi import APIRouter, Form, Request
+from fastapi import APIRouter, Request
 from fastapi.params import Depends
-from starlette.responses import JSONResponse, RedirectResponse
-
-from ..contexts.admin import get_admin_context
-from ..models.user import CandidateFromAdmin
-from ..models.poll import Poll, PollId
-from backend.election.db import fakedata
-from backend.election.utils.parses import parse_poll
+from starlette.responses import RedirectResponse, Response, StreamingResponse
+from election.core.routes import poll
+from election.core.contexts.admin import AdminContext, adminContext, get_admin_context
+from election.core.models.poll import CandidateInPoll, Poll, PollId, PollShareable
+from election.db.database import AsyncDB, db_session_factory
+from election.repository.candidate import CandidateRepository
+from election.repository.poll import PollRepository
+from election.utils.parses import parse_poll
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 logger.addHandler(logging.StreamHandler())
-
 
 router = APIRouter(
     prefix="/admin",
@@ -23,43 +23,53 @@ router = APIRouter(
 )
 
 
-@router.get("/polls/{pollid}")
-async def get_poll(pollid: PollId, request: Request):
-    redirect_url = request.url_for('poll', poll_id=pollid)
-    return RedirectResponse(url=redirect_url)
+@router.get("/polls/{poll_id}")
+async def get_poll(poll_id: PollId):
+    poll_repo = PollRepository(AsyncDB(db_session_factory))
+    poll_in_db = await poll_repo.read(poll_id)
+    can_repo = CandidateRepository(AsyncDB(db_session_factory))
+
+    candidates = await can_repo.get_candidates_in_election(poll_id)
+    p = PollShareable(
+        election_id=poll_in_db.election_id,
+        title=poll_in_db.title,
+        description=poll_in_db.description,
+        start_date=poll_in_db.start_date,
+        end_date=poll_in_db.end_date,
+        validation_regex=poll_in_db.validation_regex,
+        election_status=poll_in_db.election_status,
+        candidates=[CandidateInPoll.model_validate(x) for x in candidates],
+    )
+    return p
 
 
 @router.post("/createPoll")
-async def create_poll(poll: Poll = Depends(parse_poll)):
+async def create_poll(poll: Poll = Depends(parse_poll), _admin_context: AdminContext = Depends(get_admin_context)) -> UUID:
     """
+    :param _admin_context:
     :param poll:
     :return:
     """
+    print(poll.model_dump())
+    await _admin_context.create_poll(poll)
     print(poll)
-    
-    return JSONResponse({"poll_id": poll.poll_id,})
+    return poll.election_id
 
 
 @router.post("/updatePoll")
-async def update_poll():
-    ...
+async def update_poll(poll: Request):
+    form = await poll.form()
+    print(form)
 
 
-@router.post("/addCandidate")
-async def add_candiates(candidate: Annotated[CandidateFromAdmin, Form()]):
-    admin_context = get_admin_context()
-    await admin_context.add_candidate()
-    print("recieved a candidate", candidate)
-    return candidate.model_dump()
-
-
-@router.get("/getCandidates")
-async def get_candidates():
-    _l = []
-    for candidate in fakedata.candidates.values():
-        _l.append(candidate)
-
-    return JSONResponse(_l)
+@router.get("/getPolls")
+async def get_polls(_admin_context: adminContext):
+    views = []
+    async for poll_view in _admin_context.get_poll_views():
+        dumped = poll_view.model_dump()
+        views.append(dumped)
+    print(views)
+    return views
 
 
 @router.delete("/deletePoll")
