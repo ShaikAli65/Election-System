@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Query
 
-from core.contexts.admin import get_admin_context
+from election.core.contexts.admin import get_admin_context
 
 router = APIRouter(
     prefix="/candidate",

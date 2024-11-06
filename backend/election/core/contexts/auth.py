@@ -5,12 +5,13 @@ import sqlalchemy.exc
 from fastapi import Cookie, Depends, HTTPException
 from jose import JWTError, jwt
 from starlette import status
+from starlette.requests import Request
 
-from core.constants import get_google_oauth_creds, get_jwt_config
-from core.models.user import User, UserCredentials, UserLoggedInCookie
-from db.database import AsyncDB, DictDB, db_session_factory
-from repository.auth import AuthRepository
-from repository.user import UserRepository
+from election.core.constants import get_google_oauth_creds, get_jwt_config
+from election.core.models.user import User, UserCredentials, UserLoggedInCookie
+from election.db.database import AsyncDB, DictDB, db_session_factory
+from election.repository.auth import AuthRepository
+from election.repository.user import UserRepository
 
 
 class AuthContext:
@@ -33,6 +34,7 @@ class AuthContext:
                 await self._user_repo.create(self._user)
             except sqlalchemy.exc.IntegrityError as exp:
                 print(exp)
+                raise
 
         cookie = await self.generate_cookie()
         await self._auth_repo.create((self.user.user_id, cookie))
@@ -73,10 +75,16 @@ class AuthContext:
 
 # dependencies
 
-async def get_auth_context(cookie: Annotated[UserLoggedInCookie, Cookie()]) -> AuthContext:
+async def get_auth_context(request: Request) -> AuthContext:
+    token = request.headers.get('access_token')
+    if not token:
+        print("token not found", list(request.headers.items()))
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+
+    cookie = UserLoggedInCookie(access_token=token)
+
     u_repo = UserRepository(AsyncDB(db_session_factory))
     a_repo = AuthRepository(DictDB())
-
     context = AuthContext(a_repo, u_repo)
 
     try:
@@ -92,12 +100,12 @@ Authenticator = Annotated[AuthContext, Depends(get_auth_context)]
 
 
 async def sign_in_user(user_creds: UserCredentials):
-    print(user_creds)  # debug
+
     oauthcreds = get_google_oauth_creds()
     try:
         assert oauthcreds.client_id == user_creds.authorized_party, "Invalid Client Id from JS"
     except AssertionError:
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="client id provided is not acceptable")
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="oauth client id provided is not valid")
 
     u_repo = UserRepository(AsyncDB(db_session_factory))
     a_repo = AuthRepository(DictDB())

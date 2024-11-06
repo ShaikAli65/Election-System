@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
 
-from db.database import DB
+from election.db.database import DB
 
 
 class Repository(ABC):
     def __init__(self, _db: DB):
-        self._database = _db
+        self.database = _db
 
     @abstractmethod
     async def create(self, item):...
