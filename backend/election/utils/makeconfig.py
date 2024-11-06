@@ -2,8 +2,8 @@ import configparser
 import json
 from pathlib import Path
 
-from core import constants
-from core.constants import Configurations, DBConfigurations, GoogleOAuthCreds, \
+from election.core import constants
+from election.core.constants import Configurations, DBConfigurations, GoogleOAuthCreds, \
     JWTConfigurations, get_config
 
 
@@ -60,6 +60,7 @@ def load_db_configs(config_fd: "A file descriptor"):
         ip=dbconfig['IP'],
         port=dbconfig.getint('PORT'),
         database_name=dbconfig['DATABASE_NAME'],
+        inmemory_dict_path=dbconfig['INMEMORY_DICT_PATH'],
     )
     dbconfigs.make_url(dbconfig['URL'])
     dbconfigs.engine_args = {
