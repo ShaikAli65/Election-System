@@ -1,17 +1,20 @@
+import re
+import uuid
+from collections import defaultdict
 from typing import Annotated
 
-import fastapi
-import pydantic
-from fastapi import Cookie, HTTPException, Request
+from fastapi import Form, HTTPException, Request
+from fastapi.exceptions import ValidationException
+from starlette import status
 
-from backend.election.core.models.user import PersonId
-from backend.election.core.models.poll import CandidateInPoll, Poll, PortFolio
-
-from backend.election.utils.files import generate_portfolio_path, save_porfolio
-from backend.election.utils.useables import get_unique_id
+from election.core.models.poll import CandidateInPoll, Poll
+from election.utils.files import generate_portfolio_path, save_porfolio
+from election.core.models.poll import PollMetaData
+from election.core.models.user import CandidateParsed
 
 
 async def parse_poll(
+        poll_meta_data: Annotated[PollMetaData, Form()],
         request: Request,
 ):
     """
@@ -25,48 +28,46 @@ async def parse_poll(
         .
         .
     }
+    :param poll_meta_data:
     :param request:
     :return:
     """
-    poll_id = get_unique_id(str)
+
     form_data = await request.form()
 
-    title = form_data.get("title")
-    poll_type = form_data.get("type")
-    start_date = form_data.get("startDate")
-    end_date = form_data.get("endDate")
-    authorization_regex = form_data.get("validationRegex")
+    candidates = defaultdict(lambda: CandidateParsed(election_id=str(poll_meta_data.election_id)))
+    syntax_regex = r"candidates\{(?P<candidate_id>[a-f0-9-]+)\}\{(?P<item_name>\w+)\}"
+    # "can_{candidate_id}{item_name}"
 
-    candidates_portfolios = {}
-    saved_files = []
     for key in form_data:
-        if key.startswith("can_"):
-            candidate_id = key[4:]
-            file = form_data[key]
-            file_location = generate_portfolio_path(poll_id, candidate_id)
-            await save_porfolio(file_location, file)
-            saved_files.append(file_location)
-            candidates_portfolios[candidate_id] = file_location
+
+        match = re.match(syntax_regex, key)
+        if not match:
+            continue
+
+        candidate_id = uuid.UUID(match.group("candidate_id"))
+        item_name = match.group("item_name")
+
+        print(f"{candidate_id=} {item_name=}, {form_data.get(key)}")
+        if item_name == 'portfolio':
+            file_data = form_data[key]
+            file_location = generate_portfolio_path(poll_meta_data.election_id, candidate_id)
+            await save_porfolio(file_location, file_data.file)
+            setattr(candidates[candidate_id], 'manifesto_file_path', str(file_location))
+            continue
+
+        setattr(candidates[candidate_id], item_name, form_data.get(key))
+
     try:
+        if not any(candidates):
+            raise ValidationException
+
         poll = Poll(
-            poll_id=poll_id,
-            title=title,
-            type=poll_type,
-            start_date=start_date,
-            end_date=end_date,
-            validation_regex=authorization_regex,
-            candidates=[
-                CandidateInPoll(
-                    candidate_id=c_id,
-                    portfolio=PortFolio(
-                        portfolio_path=portfolio_path,
-                        poll_id=poll_id,
-                        candidate_id=c_id,
-                    )
-                )
-                for c_id, portfolio_path in candidates_portfolios.items()
-            ]
+            **poll_meta_data.model_dump(),
+            candidates=[CandidateInPoll(**x.model_dump()) for x in candidates.values()]
         )
-    except pydantic.ValidationError as ve:
-        raise HTTPException(fastapi.status.HTTP_422_UNPROCESSABLE_ENTITY,f"parsing failed :{ve}")
-    return poll
+        return poll
+    except ValidationException as e:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e))
+
+
