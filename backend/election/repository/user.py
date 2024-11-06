@@ -3,17 +3,17 @@ import uuid
 from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.models.user import User, UserCredentials
-from db.schemas import Authentication
-from repository.interface import Repository
+from election.core.models.user import User, UserCredentials
+from election.db.schemas import AuthenticationSchema
+from election.repository.interface import Repository
 
 
 class UserRepository(Repository):
 
     async def create(self, user: User):
-        async with self._database() as async_session:
+        async with self.database() as async_session:
             async_session: AsyncSession
-            new_user = Authentication(**user.model_dump())
+            new_user = AuthenticationSchema(**user.model_dump())
             async_session.add(new_user)
             await async_session.commit()
             await async_session.refresh(new_user)
@@ -33,23 +33,23 @@ class UserRepository(Repository):
         )
 
     async def read(self, user_id):
-        async with self._database() as async_session:
+        async with self.database() as async_session:
             async_session: AsyncSession
-            result = await async_session.execute(select(Authentication).filter_by(user_id=user_id))
+            result = await async_session.execute(select(AuthenticationSchema).filter_by(user_id=user_id))
             return result.scalars().first()
 
     async def update(self, user_id, user_model: User):
-        async with self._database() as async_session:
+        async with self.database() as async_session:
             async_session: AsyncSession
-            query = update(Authentication).where(Authentication.user_id == user_id).values(**user_model.model_dump())
+            query = update(AuthenticationSchema).where(AuthenticationSchema.user_id == user_id).values(**user_model.model_dump())
             await async_session.execute(query)
             await async_session.commit()
             return await self.read(user_id)
 
     async def delete(self, user_id):
-        async with self._database() as async_session:
+        async with self.database() as async_session:
             async_session: AsyncSession
-            query = delete(Authentication).where(Authentication.user_id == user_id)
+            query = delete(AuthenticationSchema).where(AuthenticationSchema.user_id == user_id)
             await async_session.execute(query)
             await async_session.commit()
             return {"message": "Authentication record deleted successfully"}
