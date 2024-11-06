@@ -7,7 +7,7 @@ from dataclasses import Field
 from pathlib import Path
 
 
-@dataclasses.dataclass(slots=True)
+@dataclasses.dataclass
 class Configurations:
     version: float
     app_name: str
@@ -18,9 +18,7 @@ class Configurations:
     google_oauth_secrets_path: Path
 
     def __str__(self):
-        for k, v in self.__dict__.items():
-            print(k, v)
-        return ""
+        return ", ".join(str(k) for k in self.__dict__.items())
 
 
 @dataclasses.dataclass(slots=True)
@@ -43,6 +41,7 @@ class DBConfigurations:
     database_name: str = None
     url: str = None
     engine_args: dict = None
+    inmemory_dict_path: str = None
 
     def make_url(self, url_frame):
         self.url = url_frame.format(
@@ -81,6 +80,7 @@ JWT_CONFIG: JWTConfigurations | None = None
 
 
 def get_config() -> Configurations:
+    global CONFIG
     return CONFIG
 
 
