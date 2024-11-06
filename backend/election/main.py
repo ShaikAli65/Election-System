@@ -21,8 +21,8 @@ async def life_span(_: FastAPI):
     await database.initialize_database()
     admin_init()
     await activate_db_timed_triggers()
-    await finalize()
     yield
+    await finalize()
 
 app = FastAPI(
     title="ElectionSystem",
