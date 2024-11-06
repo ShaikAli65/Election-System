@@ -1,11 +1,14 @@
-import enum
+import uuid
+from dataclasses import dataclass
+from datetime import datetime
+from uuid import UUID
 
-from pydantic import BaseModel, FilePath, FutureDate
+from pydantic import BaseModel, ConfigDict, Field, FilePath
 
-from .user import PersonId as _PId
+from election.core.models.user import CandidateParsed, PersonId as _PId
+from election.db.schemas import ElectionStatusEnum
 
-
-PollId = str
+PollId = UUID
 ResultId = str
 PortFolioId = _PId
 
@@ -16,24 +19,9 @@ class PortFolio(BaseModel):
     candidate_id: _PId
 
 
-class CandidateInPoll(BaseModel):
-    candidate_id: _PId
-    portfolio: PortFolio = None
-    vote_count: int = 0
-
-
-class PollStatus(enum.Enum):
-    """
-    POLL STATUS CODES:
-    SCHEDULED: 0
-    ACTIVE: 1
-    EXPIRED: 3
-    CANCELLED: 4
-    """
-    SCHEDULED = 0
-    ACTIVE = 1
-    EXPIRED = 3
-    CANCELLED = 4
+class CandidateInPoll(CandidateParsed):
+    """this class structure defines how Candidate appeares inside a poll"""
+    model_config = ConfigDict(from_attributes=True)
 
 
 class PollResult(BaseModel):
@@ -43,16 +31,48 @@ class PollResult(BaseModel):
     total_votes: int
 
 
-class Poll(BaseModel):
-    poll_id: PollId = None
+class PollMetaData(BaseModel):
+    election_id: PollId = Field(default_factory=uuid.uuid4)
     title: str
-    type: str
-    start_date: FutureDate
-    end_date: FutureDate
-    candidates: list[CandidateInPoll]
+    description: str
+    start_date: datetime
+    end_date: datetime
     validation_regex: str
 
 
-class PollInDb(Poll):
-    status: PollStatus = PollStatus.SCHEDULED
-    result: PollResult = None
+class Poll(PollMetaData):
+    candidates: list[CandidateInPoll]
+
+
+class PollInDb(PollMetaData):
+    model_config = ConfigDict(from_attributes=True)
+
+    election_status: str = ElectionStatusEnum.UPCOMING
+    total_voters: int = 0
+    total_candidates: int = 0
+
+
+class PollShareable(Poll):
+    """A poll that is sent to a normal user"""
+    model_config = ConfigDict(from_attributes=True)
+
+    election_status: str
+    is_joined: bool
+
+
+class PollView(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    election_id: UUID
+    title: str
+    election_status: str
+    start_date: datetime
+    end_date: datetime
+
+
+@dataclass(slots=True)
+class BallotEntry:
+    voter_id:UUID
+    election_id:UUID
+    candidate_id:UUID
+    voting_time: datetime
+
